@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.PriceContractDao">
+
+    <select id="get" resultType="PriceContract">
+        SELECT * FROM price_contract WHERE price_contract_no = #{priceContractNo}
+    </select>
+
+    <insert id="insertPriceContract">
+        INSERT INTO price_contract (
+        PRICE_CONTRACT_NO
+        ,CONTRACT_NAME
+        ,EFFECT_START_TIME
+        ,EFFECT_END_TIME
+        ,SETTLEMENT_TYPE
+        ,SETTLEMENT_DAYS
+        ,REMARKS
+        ,VALID_FLAG
+        ,CREATE_BY
+        ,CREATE_TIME
+        ) VALUES (
+        #{priceContractNo}
+        , #{contractName}
+        , #{effectStartTime}
+        , #{effectEndTime}
+        , #{settlementType}
+        , #{settlementDays}
+        , #{remarks}
+        , #{validFlag}
+        , #{createBy}
+        , now()
+        )
+    </insert>
+
+    <update id="updatePriceContract">
+        UPDATE PRICE_CONTRACT
+        SET  CONTRACT_NAME        =  #{contractName}
+        ,EFFECT_START_TIME    =  #{effectStartTime}
+        ,EFFECT_END_TIME      =  #{effectEndTime}
+        ,SETTLEMENT_TYPE      =  #{settlementType}
+        ,SETTLEMENT_DAYS      =  #{settlementDays}
+        ,REMARKS             =  #{remarks}
+        ,VALID_FLAG           =  #{validFlag}
+        ,UPDATE_BY           =  #{updateBy}
+        ,UPDATE_TIME          =  now()
+        WHERE PRICE_CONTRACT_NO   = #{priceContractNo}
+    </update>
+
+    <update id="deletePriceContract">
+        UPDATE  price_contract
+        SET VALID_FLAG = 'N'
+        WHERE PRICE_CONTRACT_NO   = #{priceContractNo}
+    </update>
+</mapper>

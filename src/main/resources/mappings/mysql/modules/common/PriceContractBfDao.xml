@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.PriceContractBfDao">
+
+    <select id="get" resultType="PriceContractBf">
+        SELECT * FROM price_contract_bf WHERE id = #{id}
+    </select>
+
+    <select id="findPriceContract" resultType="PriceContractBf">
+        SELECT
+        *
+        FROM
+        price_contract_bf pcb
+        WHERE
+        pcb.price_contract_no = #{priceContractNo}
+        AND pcb.province_code = #{provinceCode}
+        AND pcb.city_code = #{cityCode}
+        AND pcb.bins_type = #{binsType}
+        AND pcb.io_type = #{ioType}
+        AND pcb.valid_flag = 'Y'
+        <if test="districtCode == null or districtCode == ''">
+            AND IFNULL(pcb.district_code,'') = ''
+        </if>
+        <if test="districtCode != null and districtCode != ''">
+            AND pcb.district_code = #{districtCode}
+        </if>
+        <if test="countyCode == null or countyCode == ''">
+            AND IFNULL(pcb.county_code,'') = ''
+        </if>
+        <if test="countyCode != null and countyCode != ''">
+            AND pcb.county_code = #{countyCode}
+        </if>
+        <if test="containerType == null or containerType == ''">
+            AND IFNULL(pcb.container_type,'') = ''
+        </if>
+        <if test="containerType != null and containerType != ''">
+            AND pcb.container_type = #{containerType}
+        </if>
+        <if test="remarks == null or remarks == ''">
+            AND IFNULL(pcb.remarks,'') = ''
+        </if>
+        <if test="remarks != null and remarks != ''">
+            AND pcb.remarks = #{remarks}
+        </if>
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO price_contract_bf
+        (
+        price_contract_no,
+        charging_type,
+        bins_type,
+        io_type,
+        from_province_code,
+        from_city_code,
+        from_district_code,
+        from_county_code,
+        to_province_code,
+        to_city_code,
+        to_district_code,
+        to_county_code,
+        container_type,
+        remarks,
+        r_cus_bf_price,
+        r_cus_bf_price_no_tax,
+        round_trip_flag,
+        overweight_price,
+        limit_weight,
+        create_by,
+        create_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" open="" close="" separator=",">
+            (
+            #{item.priceContractNo},
+            #{item.chargingType},
+            #{item.binsType},
+            #{item.ioType},
+            CASE WHEN  #{item.fromProvinceCode} = '' THEN NULL ELSE #{item.fromProvinceCode} END,
+            CASE WHEN  #{item.fromCityCode} = '' THEN NULL ELSE #{item.fromCityCode} END,
+            CASE WHEN  #{item.fromDistrictCode} = '' THEN NULL ELSE #{item.fromDistrictCode} END,
+            CASE WHEN  #{item.fromCountyCode} = '' THEN NULL ELSE #{item.fromCountyCode} END,
+            CASE WHEN  #{item.toProvinceCode} = '' THEN NULL ELSE #{item.toProvinceCode} END,
+            CASE WHEN  #{item.toCityCode} = '' THEN NULL ELSE #{item.toCityCode} END,
+            CASE WHEN  #{item.toDistrictCode} = '' THEN NULL ELSE #{item.toDistrictCode} END,
+            CASE WHEN  #{item.toCountyCode} = '' THEN NULL ELSE #{item.toCountyCode} END,
+            #{item.containerType},
+            CASE WHEN  #{item.remarks} = '' THEN NULL ELSE #{item.remarks} END,
+            #{item.rCusBfPrice},
+            #{item.rCusBfPriceNoTax},
+            #{item.roundTripFlag},
+            #{item.overweightPrice},
+            #{item.limitWeight},
+            #{item.createBy},
+            NOW()
+            )
+        </foreach>
+    </insert>
+
+    <update id="deletePriceContractBf">
+        UPDATE  price_contract_bf
+        SET VALID_FLAG = 'N'
+        WHERE PRICE_CONTRACT_NO   = #{priceContractNo}
+    </update>
+</mapper>

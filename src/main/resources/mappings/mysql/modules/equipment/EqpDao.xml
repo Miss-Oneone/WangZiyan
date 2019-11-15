@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.equipment.dao.EqpDao">
+
+    <select id="listTrailers" resultType="EqpModel">
+        SELECT
+            mt.plate_num AS plateNum
+            ,mt.address AS address
+        FROM mst_trailer mt
+        WHERE 1=1
+        <if test="plateNum != null and plateNum !=''">
+            AND mt.plate_num LIKE CONCAT('%', #{plateNum}, '%')
+        </if>
+
+    </select>
+
+    <select id="listTruckFrames" resultType="EqpModel">
+        SELECT
+          mtf.id AS id
+          ,mtf.frame_card_id AS frameCardNo
+          ,mtf.frame_num AS frameNum
+          ,(SELECT COUNT(1) FROM ord_header oh WHERE oh.frame_num = mtf.id
+                <if test="dateFrom != null and dateFrom != ''">
+                    AND DATE_FORMAT(oh.create_Time,'%Y-%m-%d') &gt;= #{dateFrom}
+                </if>
+                <if test="dateTo != null and dateTo != ''">
+                    AND DATE_FORMAT(oh.create_Time,'%Y-%m-%d') &lt;= #{dateTo}
+                </if>
+            ) AS `count`
+          ,mtf.current_contn_no AS currBindContnNo
+          ,mtf.address AS address
+        FROM mst_truck_frame mtf
+        WHERE 1=1
+        <if test="frameNum != null and frameNum !=''">
+            AND (mtf.frame_num LIKE CONCAT('%', #{frameNum}, '%') OR mtf.frame_card_id LIKE CONCAT('%', #{frameNum}, '%'))
+        </if>
+    </select>
+
+    <select id="listContns" resultType="EqpModel">
+        SELECT
+            mc.id AS id
+            ,mc.contn_no AS contnNo
+            ,td.label AS contnType
+            ,td2.label AS activeFlag
+            ,mc.address AS address
+            ,(SELECT COUNT(1) FROM ord_header oh WHERE oh.BUSINESS_NO2 = mc.contn_no
+                    <if test="dateFrom != null and dateFrom != ''">
+                        AND DATE_FORMAT(oh.create_Time,'%Y-%m-%d') &gt;= #{dateFrom}
+                    </if>
+                    <if test="dateTo != null and dateTo != ''">
+                        AND DATE_FORMAT(oh.create_Time,'%Y-%m-%d') &lt;= #{dateTo}
+                    </if>
+              ) AS `count`
+        FROM mst_contn mc
+        LEFT JOIN t_dict td ON td.value = mc.contn_type AND td.groupno = 'CONTN_TYPE'
+        LEFT JOIN t_dict td2 ON td2.value = mc.active_flag AND td2.groupno = 'ACTIVE_FLAG'
+        WHERE 1=1
+        <if test="contnNo != null and contnNo !=''">
+            AND mc.contn_no LIKE CONCAT('%', #{contnNo}, '%')
+        </if>
+    </select>
+</mapper>

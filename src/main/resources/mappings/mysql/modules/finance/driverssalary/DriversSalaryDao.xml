@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.finance.driverssalary.dao.DriversSalaryDao" >
+	<select id="listDriversSalarys" resultType="DriversSalaryModel">
+		SELECT
+			driverCode
+			,driverName
+			,plateNum
+			,count
+			,stdKmQty
+			,adjustKm
+			,stdOilQtyTemp + IFNULL(ROUND(SUM((gka.ADJUST_KM * IFNULL(mt1.LITERS,0) /100)), 2), 0) AS stdOilQty
+			,oilMass
+			,actualOil
+			,baseSalary
+			,otherSubsidy
+			,extraWorkSubsidy
+			,driverType
+			,quitFlag
+			,transportTypeCd
+			,baseSubsidy
+		FROM (SELECT
+				md.DRIVER_CODE AS driverCode
+				,md.DRIVER_NAME AS driverName
+				,GROUP_CONCAT(distinct oh.PLATE_NUM) AS plateNum
+				,SUM(CASE WHEN oh.TRANSPORT_TYPE = '1' THEN IF(oh.TRIP_FLAG = '1', 1, 0) WHEN oh.TRANSPORT_TYPE = '2' THEN 1 ELSE 0 END) AS count
+				,IFNULL(SUM(oh.ADJ_KM), 0) AS stdKmQty
+				,IFNULL((SELECT SUM(gka.ADJUST_KM) FROM gps_km_adjust gka WHERE gka.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(gka.ADJUST_TIME, '%Y-%m') = #{salaryMonth}),0) AS adjustKm
+				,IFNULL(ROUND(SUM((oh.ADJ_KM * IFNULL(mt.LITERS,0) /100)), 2), 0) AS stdOilQtyTemp
+				,IFNULL((SELECT SUM(moma.OIL_MASS) FROM mst_oil_mass_adjust moma WHERE moma.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(moma.TIME, '%Y-%m') = #{salaryMonth}), 0)
+					+ IFNULL((SELECT SUM(EXTRA_WORK_OIL_PATCH) + SUM(ADD_KM_OIL_PATCH) FROM extra_work_detail ewd WHERE ewd.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(ewd.OCCUR_DATE, '%Y-%m') = #{salaryMonth} AND ewd.DELETE_FLAG = 'N'),0) AS oilMass
+				,IFNULL((SELECT SUM(f.ADD_LITERS) FROM fuel_filling f WHERE f.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(f.OPERATION_TIME, '%Y-%m') = #{salaryMonth}), 0) AS actualOil
+				,SUM(IFNULL((SELECT SUM(orp.AMOUNT) FROM ord_receipts_payments orp WHERE orp.PI_CODE = 'PI_SJGZ' AND orp.COMPY_CODE = md.DRIVER_CODE AND orp.ORDER_NO = oh.ORDER_NO), 0)) AS baseSalary
+				,SUM(IFNULL((SELECT SUM(orp.AMOUNT) FROM ord_receipts_payments orp WHERE orp.PI_CODE in ('PI_CZBT','PI_ZDJBT','PI_QTBT','PI_ZBF') AND orp.COMPY_CODE = md.DRIVER_CODE AND orp.ORDER_NO = oh.ORDER_NO), 0)) AS otherSubsidy
+				,IFNULL((SELECT SUM(AMOUNT) FROM extra_work_detail ewd WHERE ewd.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(ewd.OCCUR_DATE, '%Y-%m') = #{salaryMonth} and ewd.DELETE_FLAG = 'N'),0) AS extraWorkSubsidy
+				,md.DRIVER_TYPE AS driverType
+				,md.QUIT_FLAG AS quitFlag
+				,IFNULL(mt.TRANSPORT_TYPE,3) AS transportTypeCd
+				,'0.00' AS baseSubsidy
+			FROM mst_driver md
+			LEFT JOIN ord_header oh ON oh.DRIVER_CODE = md.DRIVER_CODE AND DATE_FORMAT(oh.BUSINESS_DATE, '%Y-%m') = #{salaryMonth}
+			LEFT JOIN mst_trailer mt ON mt.PLATE_NUM = oh.PLATE_NUM
+			WHERE 1=1
+			<if test="driverCode != null and driverCode != ''">
+				AND md.DRIVER_CODE = #{driverCode}
+			</if>
+		    AND md.DRIVER_TYPE != '2'
+			GROUP BY md.DRIVER_CODE
+			ORDER BY md.QUIT_FLAG, md.DRIVER_TYPE, transportTypeCd
+		) t
+		LEFT JOIN gps_km_adjust gka ON gka.DRIVER_CODE = t.driverCode AND DATE_FORMAT(gka.ADJUST_TIME, '%Y-%m') = #{salaryMonth}
+		LEFT JOIN mst_trailer mt1 ON mt1.PLATE_NUM = gka.PLATE_NUM
+		GROUP BY t.quitFlag,t.driverCode
+
+	</select>
+
+	<select id="listSalaryAdditionals" resultType="DriversSalaryModel">
+		SELECT
+			DRIVER_CODE AS driverCode
+			,DEDUCT_SS_AMOUNT AS deductSsAmount
+			,DEDUCT_TAX_AMOUNT AS deductTaxAmount
+			,DEDUCT_LOAN_AMOUNT AS deductLoanAmount
+			,DEDUCT_OTHER_AMOUNT AS deductOtherAmount
+			,BASE_SUBSIDY AS baseSubsidy
+		FROM ord_salary_additional WHERE SALARY_MONTH = #{salaryMonth} AND DRIVER_CODE IN
+		<foreach collection="drivers" item="item" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="findDriverAddtionInfo" resultType="DriversSalaryModel">
+		select
+		md.DRIVER_CODE AS driverCode
+		,md.DRIVER_NAME AS driverName
+		,IFNULL(msa.LEAVE_DAYS,0) AS leaveDays
+		,COALESCE(msa.ORG_BASE_SALARY_AMOUNT,0.00) AS orgBaseSalaryAmount
+		,COALESCE(msa.BASE_SALARY_AMOUNT,0.00) AS baseSalaryAmount
+		,IFNULL(msa.ADD_DUTY_REWARD_AMOUNT,300.00) AS addDutyRewardAmount
+		,IFNULL(msa.ADD_OTHER_AMOUNT,0.00) AS addOtherAmount
+		,IFNULL(msa.DEDUCT_SS_AMOUNT,0.00) AS deductSsAmount
+		,IFNULL(msa.DEDUCT_RISK_AMOUNT,0.00) AS deductRiskAmount
+		,IFNULL(msa.DEDUCT_LOAN_AMOUNT,0.00) AS deductLoanAmount
+		,IFNULL(msa.DEDUCT_TAX_AMOUNT,0.00) AS deductTaxAmount
+		,IFNULL(msa.DEDUCT_OTHER_AMOUNT,0.00) AS deductOtherAmount
+		,IFNULL(msa.BASE_SUBSIDY,0.00) AS baseSubsidy
+		FROM  mst_driver md
+		LEFT JOIN ord_salary_additional msa ON md.DRIVER_CODE = msa.DRIVER_CODE AND msa.SALARY_MONTH = #{salaryMonth}
+		WHERE 1=1
+		AND md.DRIVER_CODE = #{driverCode}
+	</select>
+
+	<select id="searchDetail" resultType="DriversSalaryDetailModel">
+		select  md.DRIVER_NAME as driverName
+				,oh.PLATE_NUM as plateNum
+				,IFNULL(td.label,'短途') as tripFlag
+				,DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') as drvordTime
+				,oh.BUSINESS_NO2 as contnNo
+				,mza1.name as departurePlace
+				,mza2.name as arrivalPlace
+				,oh.INTER_GOODS as goodsName
+				,IFNULL(oh.ADJ_KM,0) as stdKmQty
+				,IFNULL((select sum(gka.ADJUST_KM) from gps_km_adjust gka where gka.DRIVER_CODE = oh.DRIVER_CODE and DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m-%d') = DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d')),0) as adjustKm
+				,(IFNULL(oh.ADJ_KM,0)+IFNULL((select sum(gka.ADJUST_KM) from gps_km_adjust gka where gka.DRIVER_CODE = oh.DRIVER_CODE and DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m-%d') = DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d')),0))*IFNULL(mt.LITERS,0)/100 as stdOilQty
+				,IFNULL((select sum(ff.ADD_LITERS) from fuel_filling ff where ff.PLATE_NUM = oh.PLATE_NUM and ff.DRIVER_CODE = oh.DRIVER_CODE and DATE_FORMAT(ff.OPERATION_TIME,'%Y-%m-%d') = DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') ),0) as actualOil
+				,ifnull(sum(case when orp.PI_CODE = 'PI_SJGZ' then orp.AMOUNT end ),0) as baseSalary
+				,ifnull(sum(case when orp.PI_CODE in ('PI_CZBT','PI_ZDJBT','PI_QTBT','PI_ZBF') then orp.AMOUNT end),0) as otherSubsidy
+				,ifnull(sum(orp.AMOUNT),0) as totalAmount
+				,oh.REMARKS as remarks
+				,IFNULL(mt.LITERS,0) as  liters
+				,oh.TRANSPORT_TYPE as transportType
+		from ord_header oh
+		left join mst_driver md on md.DRIVER_CODE = oh.DRIVER_CODE
+		left join t_dict td on td.value = oh.TRIP_FLAG and td.groupno = 'TRIP_FLAG'
+		left join mst_zx_address mza1 on mza1.id = oh.DEPARTURE_PLACE
+		left join mst_zx_address mza2 on mza2.id = oh.ARRIVAL_PLACE
+		left join mst_trailer mt on mt.PLATE_NUM = oh.PLATE_NUM
+		left join ord_receipts_payments orp on orp.ORDER_NO = oh.ORDER_NO and orp.PI_CODE in ('PI_SJGZ','PI_CZBT','PI_ZDJBT','PI_QTBT','PI_ZBF') and orp.PAYMENT_TYPE = 2 and orp.COMPY_CODE = oh.DRIVER_CODE
+		where oh.DRIVER_CODE = #{driverCode}
+		and DATE_FORMAT(oh.BUSINESS_DATE, '%Y-%m')=#{salaryMonth}
+		group by oh.ORDER_NO
+		order by oh.BUSINESS_DATE,oh.TRIP_FLAG
+	</select>
+
+	<select id="searchOilAndKmList" resultType="DriversSalaryDetailModel">
+		select md.DRIVER_NAME as driverName
+			   ,ff.PLATE_NUM as plateNum
+			   ,NULL as tripFlag
+			   ,DATE_FORMAT(ff.OPERATION_TIME,'%Y-%m-%d') as drvordTime
+			   ,NULL as contnNo
+			   ,NULL as departurePlace
+			   ,NULL as arrivalPlace
+			   ,NULL as goodsName
+			   ,0 as stdKmQty
+			   ,IFNULL(gka.ADJUST_KM,0) as adjustKm
+			   ,IFNULL(gka.ADJUST_KM,0)*IFNULL(mt.LITERS,0)/100 as stdOilQty
+			   ,IFNULL(ff.ADD_LITERS,0) as actualOil
+			   ,0 as baseSalary
+			   ,0 as otherSubsidy
+			   ,0 as totalAmount
+			   ,NULL as remarks
+		from fuel_filling ff
+		left join gps_km_adjust gka on gka.DRIVER_CODE = ff.DRIVER_CODE and DATE_FORMAT(ff.OPERATION_TIME,'%Y-%m-%d') = DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m-%d')
+		left join mst_driver md on md.DRIVER_CODE = ff.DRIVER_CODE
+		left join mst_trailer mt on mt.PLATE_NUM = ff.PLATE_NUM
+		where DATE_FORMAT(ff.OPERATION_TIME,'%Y-%m') = #{salaryMonth}
+		and ff.DRIVER_CODE = #{driverCode}
+		union
+		select md.DRIVER_NAME as driverName
+			   ,gka.PLATE_NUM as plateNum
+			   ,NULL as tripFlag
+			   ,gka.ADJUST_TIME as drvordTime
+			   ,NULL as contnNo
+			   ,NULL as departurePlace
+			   ,NULL as arrivalPlace
+			   ,NULL as goodsName
+			   ,0 as stdKmQty
+			   ,IFNULL(gka.ADJUST_KM,0) as adjustKm
+			   ,IFNULL(gka.ADJUST_KM,0)*IFNULL(mt.LITERS,0)/100 as stdOilQty
+			   ,IFNULL(ff.ADD_LITERS,0) as actualOil
+			   ,0 as baseSalary
+			   ,0 as otherSubsidy
+			   ,0 as totalAmount
+			   ,NULL as remarks
+		from gps_km_adjust gka
+		left join fuel_filling ff on gka.DRIVER_CODE = ff.DRIVER_CODE and DATE_FORMAT(ff.OPERATION_TIME,'%Y-%m-%d') = DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m-%d')
+		left join mst_driver md on md.DRIVER_CODE = gka.DRIVER_CODE
+		left join mst_trailer mt on mt.PLATE_NUM = gka.PLATE_NUM
+		where  DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m') = #{salaryMonth}
+		and gka.DRIVER_CODE = #{driverCode}
+	</select>
+
+	<select id="searchOilMassAdjust" resultType="String">
+		SELECT
+		(SELECT IFNULL(SUM(moma.OIL_MASS),0)
+		FROM mst_oil_mass_adjust moma
+		WHERE moma.DRIVER_CODE = #{driverCode}
+		AND DATE_FORMAT(moma.TIME, '%Y-%m') = #{salaryMonth})
+		+
+		(SELECT IFNULL((SUM(EXTRA_WORK_OIL_PATCH) + SUM(ADD_KM_OIL_PATCH)),0)
+        FROM extra_work_detail ewd
+	    WHERE  ewd.DRIVER_CODE = #{driverCode}
+		AND DATE_FORMAT(ewd.OCCUR_DATE, '%Y-%m') =#{salaryMonth}
+		AND ewd.DELETE_FLAG = 'N')
+		FROM DUAL
+	</select>
+
+	<select id="searchDriversSalaryAdditional" resultType="DriversSalaryModel">
+		SELECT  IFNULL(OSA.DEDUCT_SS_AMOUNT,0) AS deductSsAmount
+		        ,IFNULL(OSA.DEDUCT_LOAN_AMOUNT,0) AS deductLoanAmount
+		        ,IFNULL(OSA.DEDUCT_TAX_AMOUNT,0) AS deductTaxAmount
+		        ,IFNULL(OSA.DEDUCT_OTHER_AMOUNT,0) AS deductOtherAmount
+		        ,IFNULL(OSA.BASE_SUBSIDY,0) AS baseSubsidy
+		FROM    ORD_SALARY_ADDITIONAL OSA
+		WHERE   OSA.DRIVER_CODE = #{driverCode}
+		AND     OSA.SALARY_MONTH = #{salaryMonth}
+	</select>
+
+	<select id="findDriverName" resultType="String">
+		SELECT MD.DRIVER_NAME
+		  FROM MST_DRIVER MD
+		 WHERE MD.DRIVER_CODE = #{driverCode}
+	</select>
+
+	<select id="searchExtraWorkSubsidy" resultType="String">
+		SELECT IFNULL(SUM(AMOUNT),0)
+		FROM extra_work_detail ewd
+		WHERE ewd.DRIVER_CODE =  #{driverCode}
+		AND DATE_FORMAT(ewd.OCCUR_DATE, '%Y-%m') = #{salaryMonth}
+		AND ewd.DELETE_FLAG = 'N'
+	</select>
+</mapper>

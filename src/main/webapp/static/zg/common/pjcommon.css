@@ -1,0 +1,51 @@
+.searchCondition {
+	width: 100%;
+}
+
+.searchCondition .labelColumn {
+	width: 100px;
+	text-align: right;
+	padding-right: 2px;
+}
+
+.searchCondition .componentColumn {
+	width: auto;
+}
+
+.searchCondition .dateRangeColumn {
+	width: 300px;
+}
+
+.searchCondition .buttonColumn {
+	padding-right: 5px;
+	text-align: right;
+}
+
+.tableButton {
+	display: none;
+}
+
+.digits {
+	width: 100px;
+}
+
+.amount {
+	width: 100px;
+}
+
+.formButton {
+	text-align: center;
+}
+
+.columnHide {
+	display: none;
+}
+
+.form-search input[type="radio"],.form-search input[type="checkbox"],.form-horizontal input[type="radio"],.form-horizontal input[type="checkbox"],.form-inline input[type="radio"],.form-inline input[type="checkbox"] {
+	width:20px;
+}
+
+.select2-container .select2-choice {
+    border-radius: 0px;
+    border: solid 1px #ddd;
+}

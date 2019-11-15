@@ -1,0 +1,39 @@
+/*------tbl1------*/
+.tbl1FirstColumn{
+	width:15%;
+}
+.tbl1SecondColumn{
+	width:20%;
+}
+.tbl1ThirdColumn{
+	width:10%;
+}
+.tbl1FourthColumn{
+	width:18%;
+}
+.tbl1FifthColumn{
+	width:12%;
+}
+
+/*------common------*/
+/*文本框，选择下拉框宽度*/
+.inputText{
+	width:150px;
+}
+.inputText1{
+	width:146px;
+}
+/*文本框地址宽度*/
+.inputLongText{
+	width:300px;
+}
+/*文本水平位置*/
+#textCenter{
+	text-align:center;
+}
+#textLeft{
+	text-align:left;
+}
+#textRight{
+	text-align:right;
+}

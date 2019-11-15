@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.finance.expense.dao.ExpenseDao">
+
+    <select id="findEmOrderInfo" resultType="EmOrderModel">
+        SELECT
+            oh.ORDER_NO AS orderNo,
+            oh.CUS_CODE AS cusCode,
+            mrc.COMPY_SNAME AS cusName,
+            oh.BUSINESS_NO1 AS blNo,
+            oh.BUSINESS_NO2 AS contnNo,
+            oh.SEAL_NO AS sealNo,
+            DATE_FORMAT(oh.BUSINESS_DATE, '%Y-%m-%d') AS drvordTime,
+            oh.INTER_GOODS AS interGoods,
+            oh.EXTER_GOODS AS exterGoods,
+            oh.PLATE_NUM AS plateNum,
+            mtf.frame_card_id AS frameCardId,
+            mtf.frame_num AS frameNum,
+            oh.DRIVER_CODE AS driverCode,
+            md.DRIVER_NAME AS driverName,
+            oh.ACCEPT_ORDER_FLAG AS acceptOrderFlag,
+            td2.label AS acceptOrderLabel,
+            oh.CHARGING_TYPE AS chargingType,
+            td1.label AS chargingName,
+            ROUND(oh.QUANTITY, 4) AS quantity,
+            FORMAT(oh.UNIT_PRICE,2) AS unitPrice,
+            oh.STATUS AS STATUS,
+            td3.label AS containerType,
+            oh.DOCUMENT_NO AS documentNo,
+            oh.BATCH_NO AS batchNo,
+            td4.label AS transportType,
+            a1.name AS departurePlace,
+            a2.name AS arrivalPlace,
+            oh.REMARKS AS remarks
+        FROM
+            ord_header oh
+            LEFT JOIN mst_related_compy mrc ON oh.CUS_CODE = mrc.RELATED_COMPY_CODE
+            LEFT JOIN mst_driver md ON oh.DRIVER_CODE = md.DRIVER_CODE
+            LEFT JOIN t_dict td1 ON td1.groupno = 'CHARGING_TYPE' AND td1.value = oh.CHARGING_TYPE
+            LEFT JOIN t_dict td2 ON td2.groupno = 'ACCEPT_ORDER_FLAG' AND td2.value = oh.ACCEPT_ORDER_FLAG
+            LEFT JOIN t_dict td3 ON td3.groupno = 'CONTAINER_TYPE' AND td3.value = oh.CONTAINER_TYPE
+            LEFT JOIN t_dict td4 ON td4.groupno = 'TRANSPORT_TYPE' AND td4.value = oh.TRANSPORT_TYPE
+            LEFT JOIN mst_truck_frame mtf ON mtf.id = oh.FRAME_NUM
+            LEFT JOIN mst_zx_address a1 ON a1.id = oh.DEPARTURE_PLACE
+            LEFT JOIN mst_zx_address a2 ON a2.id = oh.ARRIVAL_PLACE
+        WHERE 1 = 1
+            AND oh.ORDER_NO = #{orderNo}
+    </select>
+
+    <select id="findEmRecPayList" resultType="EmRecPayModel">
+        SELECT
+            orp.ID AS recPayId,
+            orp.ORDER_NO AS orderNo,
+            orp.PI_CODE AS piCode,
+            orp.PI_NAME AS piName,
+            orp.PAYMENT_TYPE AS paymentType,
+            orp.FEE_TYPE AS feeType,
+            orp.AMOUNT AS amount,
+            orp.EXP_DATE AS expDate,
+            orp.REMARKS AS remarks,
+            orp.COMPY_CODE AS compyCode,
+            orp.BINS_APPROVAL_FLAG AS binsApprovalFlag,
+            CASE WHEN orp.BINS_APPROVAL_FLAG = 'Y' THEN '是' ELSE '否' END AS binsApprovalFlagLabel,
+            orp.BINS_APPROVAL_PSN AS binsApprovalPsn,
+            orp.BINS_APPROVAL_REMARK AS binsApprovalRemark,
+            orp.RECON_AMOUNT AS reconAmount,
+            DATE_FORMAT(orp.RECON_TIME, '%Y-%m-%d') AS reconTime,
+            tu2.name AS reconPsn,
+            orp.ACTIVE_FLAG AS activeFlag,
+            orp.INVOICE_ISSUE_NEED_FLAG AS invoiceIssueNeedFlag,
+            CASE WHEN orp.INVOICE_ISSUE_NEED_FLAG = 'Y' THEN '是' ELSE '否' END AS invoiceIssueNeedFlagLabel,
+            DATE_FORMAT(orp.BINS_APPROVAL_TIME, '%Y-%m-%d') AS binsApprovalTime,
+            orp.SYSTEM_AUTO_FLAG AS systemAutoFlag,
+            CASE WHEN orp.SYSTEM_AUTO_FLAG = 'Y' THEN '是' ELSE '否' END AS systemAutoFlagLabel,
+            orp.FEE_STATUS AS feeStatus,
+            orp.BILL_AMOUNT AS billAmount,
+            orp.EDITABLE_FLAG AS editableFlag,
+            CASE WHEN orp.EDITABLE_FLAG = 'Y' THEN '是' ELSE '否' END AS editableFlagLabel,
+            orp.CREATE_BY AS createById,
+            tu3.name AS createBy,
+            DATE_FORMAT(orp.CREATE_TIME, '%Y-%m-%d') AS createTime,
+            tu4.name AS updateBy,
+            DATE_FORMAT(orp.UPDATE_TIME, '%Y-%m-%d') AS updateTime,
+            td1.label AS paymentName,
+            td2.label AS feeName,
+            td3.label AS feeStatusName,
+            mrc.COMPY_SNAME AS compyName,
+            (SELECT GROUP_CONCAT(DISTINCT BH.BILL_NO SEPARATOR ',') FROM bill_header BH
+            LEFT JOIN bill_detail BD ON BH.id = BD.bill_id
+            WHERE  BD.related_id = orp.ID) AS billNo,
+            (SELECT GROUP_CONCAT(DISTINCT BH.BILL_STATUS SEPARATOR ',') FROM bill_header BH
+            LEFT JOIN bill_detail BD ON BH.id = BD.bill_id
+            WHERE  BD.related_id = orp.ID) AS billStatus,
+            (SELECT GROUP_CONCAT(DISTINCT INV.INVOICE_NO SEPARATOR ',') FROM bill_header BH
+            LEFT JOIN bill_detail BD ON BH.id = BD.bill_id
+            LEFT JOIN invoice INV ON INV.id = BH.invoice_id
+            WHERE  BD.related_id = orp.ID) AS invoiceNo,
+            (SELECT GROUP_CONCAT(DISTINCT INV.INVOICE_STATUS SEPARATOR ',') FROM bill_header BH
+            LEFT JOIN bill_detail BD ON BH.id = BD.bill_id
+            LEFT JOIN invoice INV ON INV.id = BH.invoice_id
+            WHERE  BD.related_id = orp.ID) AS invoiceStatus,
+            (SELECT SUM(bd.fi_done_amount) FROM bill_detail bd
+            WHERE bd.related_id=orp.id ) AS fiDoneAmount
+        FROM
+            ord_receipts_payments orp
+            LEFT JOIN t_dict td1 ON td1.groupno = 'PAYMENT_TYPE' AND td1.value = orp.PAYMENT_TYPE
+            LEFT JOIN t_dict td2 ON td2.groupno = 'FEE_TYPE' AND td2.value = orp.FEE_TYPE
+            LEFT JOIN t_dict td3 ON td3.groupno = 'FEE_STATUS' AND td3.value = orp.FEE_STATUS
+            LEFT JOIN mst_related_compy mrc ON orp.COMPY_CODE = mrc.RELATED_COMPY_CODE
+            LEFT JOIN t_user tu2 ON tu2.id = orp.RECON_PSN
+            LEFT JOIN t_user tu3 ON tu3.id = orp.CREATE_BY
+            LEFT JOIN t_user tu4 ON tu4.id = orp.UPDATE_BY
+        WHERE 1 = 1
+            AND orp.ACTIVE_FLAG = 'Y'
+            <if test="orderNo != null and orderNo != ''">
+                AND orp.ORDER_NO = #{orderNo}
+            </if>
+            <if test="paymentType != null and paymentType != ''">
+                AND orp.PAYMENT_TYPE = #{paymentType}
+            </if>
+            <if test="feeType != null and feeType != ''">
+                AND orp.FEE_TYPE = #{feeType}
+            </if>
+            <if test="recPayId != null and recPayId != ''">
+                AND orp.id = #{recPayId}
+            </if>
+    </select>
+
+    <insert id="insertEmRecPay">
+        INSERT INTO ord_receipts_payments (
+            ORDER_NO,
+            PI_CODE,
+            PI_NAME,
+            PAYMENT_TYPE,
+            FEE_TYPE,
+            AMOUNT,
+            EXP_DATE,
+            REMARKS,
+            COMPY_CODE,
+            ACTIVE_FLAG,
+            FEE_STATUS,
+            EDITABLE_FLAG,
+            CREATE_BY,
+            CREATE_TIME
+        )
+        VALUES
+            (
+                #{orderNo},
+                #{piCode},
+                #{piName},
+                #{paymentType},
+                #{feeType},
+                #{amount},
+                #{expDate},
+                #{remarks},
+                #{compyCode},
+                #{activeFlag},
+                #{feeStatus},
+                #{editableFlag},
+                #{createBy},
+                now()
+            )
+    </insert>
+
+    <update id="updateEmRecPay">
+        UPDATE ord_receipts_payments
+        SET PI_CODE = #{piCode},
+        PI_NAME = #{piName},
+        AMOUNT = #{amount},
+        EXP_DATE = #{expDate},
+        REMARKS = #{remarks},
+        COMPY_CODE = #{compyCode},
+        FEE_STATUS = #{feeStatus},
+        UPDATE_BY = #{updateBy},
+        UPDATE_TIME = now()
+        WHERE
+            1 = 1
+        AND id = #{recPayId}
+    </update>
+
+    <select id="searchRecPayList" resultType="BatchAddPiModel">
+        SELECT OH.ORDER_NO                  AS orderNo
+        ,OH.BUSINESS_NO1                     AS blNo
+        ,oh.BUSINESS_NO2                  AS contnNo
+        ,OH.CONTAINER_TYPE            AS containerType
+        ,  (SELECT COUNT(1) FROM `ord_receipts_payments` R
+                WHERE R.`ACTIVE_FLAG` = 'Y'
+                AND R.`ORDER_NO` = OH.ORDER_NO
+                <if test="piCode != null and piCode != ''">
+                    AND  R.`PI_CODE` = #{piCode}
+                </if>
+                <if test="paymentType != null and paymentType !=''">
+                    AND R.PAYMENT_TYPE = #{paymentType}
+                </if>
+        ) AS checkResult
+        ,(SELECT GROUP_CONCAT(R.`PI_NAME`  SEPARATOR '/')
+                FROM `ord_receipts_payments` R
+                WHERE R.`ORDER_NO` = OH.ORDER_NO
+                <if test="paymentType != null and paymentType !=''">
+                    AND R.PAYMENT_TYPE = #{paymentType}
+                </if>
+        ) 	AS checkRemark
+        FROM   ORD_HEADER OH
+        WHERE   1=1
+        <if test="orderNos != null and orderNos != ''">
+            AND  OH.ORDER_NO in
+            <foreach item="item" index="index" collection="orderNos" open="(" separator="," close=")">
+                '${item}'
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getPiNameByCode" resultType="java.lang.String">
+        SELECT pi_name FROM mst_price_item WHERE pi_code = #{piCode}
+    </select>
+</mapper>

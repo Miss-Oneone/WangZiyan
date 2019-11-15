@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.oilManagement.dao.OilSearchDao">
+ 	<select id="findOilRecordList" resultType="OilSearchModel">
+		SELECT T.* FROM 
+		(SELECT  ff.SEQNO						as	seqNo
+			,	DATE_FORMAT(ff.OPERATION_TIME, '%Y-%m-%d %H:%i')			as	operationTime
+			,	ff.PLATE_NUM				as	plateNum
+			,	su.name		    			as	operationPsn
+			,	ff.ADD_LITERS				as	addLiters
+			,	mrc.COMPY_SNAME				as	driver
+			,	(case when ff.INNER_FLAG = 'Y' then '车场' else '油卡' end)	as	innerFlag
+			,	td.label					as	fuelType
+			,	ff.STATION					as	station
+			,	ff.CARD_NO					as	cardNo
+			,	ff.REMARKS					as	remarks
+			,	ff.TANK_STORAGE_PERCENT		as	tankStorage
+			,(SELECT a.price FROM mst_fuel_price a WHERE a.QUOTEDATE &lt;= ff.OPERATION_TIME ORDER BY a.QUOTEDATE DESC limit 1) AS unitPrice
+			, ROUND((SELECT a.price FROM mst_fuel_price a WHERE a.QUOTEDATE &lt;= ff.OPERATION_TIME ORDER BY a.QUOTEDATE DESC limit 1) * ff.ADD_LITERS, 2) AS amount
+		FROM 	fuel_filling ff
+		LEFT JOIN  mst_related_compy  mrc ON mrc.RELATED_COMPY_CODE = ff.DRIVER_CODE
+		LEFT JOIN	t_dict td ON ff.FUEL_TYPE = td.value and td.groupno	 = 'OIL_TYPE'
+		LEFT JOIN 	t_user su ON su.id = ff.OPERATION_PSN
+		where 1=1
+		<if test="plateNum != null and plateNum != ''">
+            AND  ff.PLATE_NUM LIKE CONCAT('%',CONCAT(#{plateNum},'%'))
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            AND  ff.DRIVER_CODE = #{driverCode}
+        </if>
+        <if test="remarks != null and remarks != ''">
+            AND  ff.REMARKS LIKE CONCAT('%',CONCAT(#{remarks},'%'))
+        </if>
+        <if test="station != null and station != ''">
+            AND  ff.STATION LIKE CONCAT('%',CONCAT(#{station},'%'))
+        </if>
+        <if test="cardNo != null and cardNo != ''">
+            AND  ff.CARD_NO LIKE CONCAT('%',CONCAT(#{cardNo},'%'))
+        </if>
+        <if test="innerFlag == 0">
+            AND  ff.inner_flag = 'Y'
+        </if>
+        <if test="innerFlag == 1">
+            AND  ff.inner_flag = 'N'
+        </if>
+        <if test="operationTimeFrom != null and operationTimeFrom != ''">
+            AND  ff.OPERATION_TIME &gt;=DATE_FORMAT(#{operationTimeFrom}, '%Y-%m-%d 00:00:00')
+        </if>
+        <if test="operationTimeTo != null and operationTimeTo != ''">
+            AND  ff.OPERATION_TIME &lt;=DATE_FORMAT(#{operationTimeTo}, '%Y-%m-%d 23:59:59')
+        </if>
+        ) T
+		<if test="page.orderBy != null and page.orderBy != ''">
+			ORDER BY  T.${page.orderBy}
+		</if>
+		<if test="page.orderBy == null or page.orderBy == ''">
+			ORDER BY T.operationTime desc
+		</if>
+	</select>
+	
+	<select id="getAllPlateNum" resultType="OilSearchModel">
+		SELECT 	PLATE_NUM		AS	PLATENUM
+		  FROM 	MST_TRAILER
+		 WHERE	VALID_FLAG='Y'
+	</select>
+	
+	<select id="getAllDriverName" resultType="OilSearchModel">
+		select 	DRIVER_CODE		as	driverCode
+			,	DRIVER_NAME		as	driver
+		from 	mst_driver
+		WHERE	QUIT_FLAG='N'
+	</select>
+	
+	<select id="getOilType" resultType="Dict">
+        SELECT  LABEL  AS label
+            ,   VALUE  AS value
+        FROM    t_dict
+        WHERE   GROUPNO = 'OIL_TYPE'
+            ;
+    </select>
+    
+    <select id="getLastMessageBySeq" resultType="OilShareFormModel">
+        SELECT 	DATE_FORMAT(ff1.OPERATION_TIME, '%Y-%m-%d %H:%i')	as	lastAddTime
+        	,	ff1.TANK_STORAGE_PERCENT	as	lastTankStorage
+		FROM 	fuel_filling ff
+			,	fuel_filling ff1
+		WHERE 	ff.DRIVER_CODE	  = ff1.DRIVER_CODE
+		AND 	ff.OPERATION_TIME > ff1.OPERATION_TIME 
+		AND 	ff.PLATE_NUM	  = ff1.PLATE_NUM 
+		AND 	ff.SEQNO          = #{seq} 
+		ORDER BY ff1.OPERATION_TIME DESC
+		LIMIT 1
+    </select>
+    
+    <select id="getLastMessage" resultType="OilShareFormModel">
+        SELECT 	DATE_FORMAT(ff.OPERATION_TIME, '%Y-%m-%d %H:%i')	as	lastAddTime
+        	,	ff.TANK_STORAGE_PERCENT	as	lastTankStorage
+        	,	ff.DRV_STORAGE_OIL		as	thisStorageOil
+        	,	mt.TANK_LITERS			as  tankLiters
+        	,	td.label				as	fuelType
+		FROM 	fuel_filling ff
+			,	mst_trailer mt
+			,	t_dict td
+		WHERE 	ff.PLATE_NUM	  = #{plateNum}  
+		and		ff.FUEL_TYPE   = td.value
+		and		td.groupno	   = 'OIL_TYPE'
+		and		ff.PLATE_NUM	  = mt.PLATE_NUM
+		ORDER BY ff.OPERATION_TIME DESC
+		LIMIT 1
+    </select>
+    
+    <select id="getThisMessage" resultType="OilShareFormModel">
+        SELECT 	mt.TANK_LITERS				as	tankLiters
+			,	DATE_FORMAT(ff.OPERATION_TIME, '%Y-%m-%d %H:%i')    as	thisAddTime
+			,	ff.PLATE_NUM				as	plateNum
+			,	ff.ADD_LITERS				as	thisAddLiters
+			,	ff.TANK_STORAGE_PERCENT		as	thisTankStorage
+			,	ff.DRV_STORAGE_OIL			as	thisStorageOil
+			,   ff.FACT_OIL_WEAR  			as  factOilWear
+		FROM 	mst_trailer mt
+			,	fuel_filling ff
+		WHERE 	ff.PLATE_NUM   = mt.PLATE_NUM 
+		AND 	ff.DRIVER_CODE = mt.CURRENT_DRV_CODE
+		AND 	ff.SEQNO       = #{seq} 
+    </select>
+	
+	<select id="getShareMessage" resultType="OilShareTableModel">
+        SELECT 	ffd.DRVORD_NO				as	drvordNo
+			,	oc.CONTN_NO					as	contnNo
+			,	d.BUGT_ADJ_GAS				as	bugtAdjGas
+			,	ffd.LITERS					as	liters
+			,	ffd.LITERS_CHECK			as	litersCheck
+			,	ffd.E_SEQNO					as	eSeqNo
+		FROM 	fuel_filling_div ffd
+			,	drvord d
+			,	ord_contn oc
+		WHERE 	ffd.DRVORD_NO = d.DRVORD_NO 
+		AND 	ffd.ORD_NO    = oc.ORDER_NO 
+		AND 	ffd.SEQNO	  = #{seq} 
+    </select>
+    
+    <select id="getDriStorageOil" resultType="String">
+        select 	STORAGE_OIL    as storageOil
+		from 	mst_driver
+		where 	DRIVER_CODE = #{driverCode}
+    </select>
+    
+    <select id="findDriver" resultType="OilSearchModel">
+        SELECT 	mt.CURRENT_DRV_CODE		as	driverCode
+        	,	mt.TANK_LITERS   		as  tankLiters
+        	,	mt.FUEL_TYPE			as	fuelType
+		FROM 	mst_trailer mt
+		WHERE 	mt.plate_Num = #{plateNum} AND IFNULL(mt.CURRENT_DRV_CODE, '') != '' AND mt.VALID_FLAG = 'Y';
+    </select>
+    
+    <select id="findTrailer" resultType="OilSearchModel">
+        SELECT 	mt.plate_Num			as	plateNum
+        	,	mt.TANK_LITERS   		as  tankLiters
+        	,	mt.FUEL_TYPE			as	fuelType
+		FROM 	mst_trailer mt
+		WHERE 	mt.CURRENT_DRV_CODE = #{driverCode};
+    </select>
+    
+    <select id="getAllDrv" resultType="FuelFillingDivModel">
+        SELECT  oc.CONTN_NO        		AS  contnNo
+            ,   d.BUGT_STD_GAS     		AS  bugtAdjGas
+            ,   d.DRVORD_NO            	AS  drvordNo 
+            ,	oc.ORDER_NO				AS	ordNo
+        FROM    ord_contn oc
+            ,   ORD_DRVORD od
+            ,   DRVORD d
+        WHERE   od.DRVORD_NO         = d.DRVORD_NO
+        AND     d.DRIVER_CODE     	 = #{driverCode}
+        AND     d.ACT_START_TIME &gt;= DATE_FORMAT(#{lastAddTime}, '%Y-%m-%d %H:%i:00')
+        AND 	od.ORDER_NO          = oc.ORDER_NO 
+        and 	od.CANCEL_FLAG       = 'N'
+            ;
+    </select>
+    
+    <select id="getOilPrice" resultType="String">
+        SELECT  PRICE           AS  price
+        FROM    MST_FUEL_PRICE
+        WHERE   FUEL_TYPE=#{fuelType}
+	    AND     INNER_FLAG=#{innerFlag}
+	    ORDER BY QUOTEDATE DESC LIMIT 0,1
+	        ;
+    </select>
+    
+	<insert id="insertFuelFilling" parameterType="OilSearchModel" useGeneratedKeys="true" keyProperty="seqNo">
+        INSERT INTO FUEL_FILLING
+            (
+		            OPERATION_TIME
+		    ,       PLATE_NUM
+		    ,       OPERATION_PSN
+		    ,       ADD_LITERS
+		    ,       UNIT_PRICE
+		    ,       DRIVER_CODE
+		    ,       INNER_FLAG
+		    ,       FUEL_TYPE
+		    ,       STATION
+		    ,       CARD_NO
+		    ,       REMARKS
+		    ,		TANK_STORAGE_PERCENT
+		    ,		DRV_STORAGE_OIL
+		    ,		FACT_OIL_WEAR
+		    ,		CREATE_PSN
+		    ,		CREATE_TIME
+		    )
+		VALUES
+		    (       
+		            #{operationTime}
+		    ,       #{plateNum}
+		    ,       #{operationPsn}
+		    ,       #{addLiters}
+		    ,       #{unitPrice}
+		    ,       #{driverCode}
+		    ,       #{innerFlag}
+		    ,       #{fuelType}
+		    ,       #{station}
+		    ,       #{cardNo}
+		    ,       #{remarks}
+		    ,		#{tankStorage}
+		    ,		'380'
+		    ,		#{addLiters}
+		    ,		#{operationPsn}
+		    ,		NOW()
+		    )
+		    ;
+    </insert>
+    
+    <insert id="insertOrdActPayable" >
+        INSERT INTO ORD_ACT_PAYABLE
+            (
+		            ORDER_NO
+		    ,       PI_CODE
+		    ,       PI_NAME
+		    ,       P_ACT_AMOUNT
+		    ,       P_ACT_DOC_NO1
+		    ,       DRVORD_NO
+		    ,		CREATE_PSN
+		    ,		CREATE_TIME
+		    )
+		VALUES
+		    (       
+		            #{orderNo}
+		    ,       'YF'
+		    ,       '油费'
+		    ,       #{amount}
+		    ,       #{pActDocNo1}
+		    ,       #{drvordNo}
+		    ,		#{operationPsn}
+		    ,		now()
+		    )
+		    ;
+    </insert>
+    
+    <insert id="insertFuelFillingDiv">
+        INSERT INTO FUEL_FILLING_DIV
+            (
+		            SEQNO
+		    ,       ORD_NO
+		    ,		DRVORD_NO
+		    ,       LITERS
+		    ,       LITERS_CHECK
+		    ,       THE_PRICE
+		    ,       CHECK_TIME
+		    ,       CHECK_PSN
+		    ,		CREATE_PSN	
+		    ,		CREATE_TIME
+		    )
+		VALUES
+		    (       
+		            #{seq}
+		    ,       #{ordNo}
+		    ,		#{drvordNo}
+		    ,       #{liters}
+		    ,       #{litersCheck}
+		    ,       #{oilPrice}
+		    ,       NOW()
+		    ,       #{checkPsn}
+		    ,       #{checkPsn}
+		    ,       NOW()
+		    )
+		    ;
+    </insert>
+    
+	<update id="updateFuelFillingDiv">
+		update 	fuel_filling_div
+		set 	LITERS_CHECK = #{litersCheck}
+			,	UPDATE_PSN   = #{updatePsn}
+			,	UPDATE_TIME  = now()
+		where 	E_SEQNO      = #{eSeqNo}
+	</update>
+	
+	<update id="updateStorageOil">
+		update 	mst_driver
+		set 	STORAGE_OIL	= #{storageOil}
+			,	UPDATE_PSN  = #{operationPsn}
+			,	UPDATE_TIME = now()
+		where 	DRIVER_CODE	= #{driverCode}
+	</update>
+	
+	<select id="findOilMsg" resultType="OilSearchExcelModel">
+		SELECT T.* FROM 
+		(SELECT  ff.SEQNO						as	seqNo
+			,	DATE_FORMAT(ff.OPERATION_TIME, '%Y-%m-%d')				as	operationTime
+			,	ff.PLATE_NUM				as	plateNum
+			,	su.name	        			as	operationPsn
+			,	ff.ADD_LITERS				as	addLiters
+			,	mrc.COMPY_SNAME				as	driver
+			,	(case when ff.INNER_FLAG = 'Y' then '车场' else '油卡' end)	as	innerFlag
+			,	td.label					as	fuelType
+			,	ff.STATION					as	station
+			,	ff.CARD_NO					as	cardNo
+			,	ff.REMARKS					as	remarks
+			,	ff.TANK_STORAGE_PERCENT		as	tankStorage
+			,   ss.name						as  createPsn
+			,   DATE_FORMAT(ff.CREATE_TIME, '%Y-%m-%d')				as  createTime
+			,   se.name						as  updatePsn
+			,   DATE_FORMAT(ff.UPDATE_TIME, '%Y-%m-%d')				as  updateTime
+			,   ff.UNIT_PRICE AS unitPrice
+		FROM 	fuel_filling as ff
+			left join    t_user se on se.id = ff.UPDATE_PSN	
+			left join   t_user ss on  ss.id = ff.CREATE_PSN
+			LEFT JOIN mst_related_compy mrc ON mrc.RELATED_COMPY_CODE = ff.DRIVER_CODE
+			LEFT JOIN t_dict td ON ff.FUEL_TYPE = td.`VALUE` AND td.groupno = 'OIL_TYPE'
+			LEFT JOIN t_user su ON su.id = ff.OPERATION_PSN
+		where 	1=1
+		<if test="plateNum != null and plateNum != ''">
+            AND  ff.PLATE_NUM LIKE CONCAT('%',CONCAT(#{plateNum},'%'))
+        </if>
+        <if test="driver != null and driver != ''">
+            AND  ff.DRIVER_CODE LIKE CONCAT('%',CONCAT(#{driver},'%'))
+        </if>
+        <if test="remarks != null and remarks != ''">
+            AND  ff.REMARKS LIKE CONCAT('%',CONCAT(#{remarks},'%'))
+        </if>
+        <if test="station != null and station != ''">
+            AND  ff.STATION LIKE CONCAT('%',CONCAT(#{station},'%'))
+        </if>
+        <if test="cardNo != null and cardNo != ''">
+            AND  ff.CARD_NO LIKE CONCAT('%',CONCAT(#{cardNo},'%'))
+        </if>
+        <if test="innerFlag == 0">
+            AND  ff.inner_flag = 'Y'
+        </if>
+        <if test="innerFlag == 1">
+            AND  ff.inner_flag = 'N'
+        </if>
+        <if test="operationTimeFrom != null and operationTimeFrom != ''">
+            AND  ff.OPERATION_TIME &gt;=DATE_FORMAT(#{operationTimeFrom}, '%Y-%m-%d 00:00:00')
+        </if>
+        <if test="operationTimeTo != null and operationTimeTo != ''">
+            AND  ff.OPERATION_TIME &lt;=DATE_FORMAT(#{operationTimeTo}, '%Y-%m-%d 23:59:59')
+        </if>
+        ) T
+        OrdER by T.operationTime desc
+	</select>
+	
+	<select id="getDriverCode" resultType="String">
+		SELECT DRIVER_CODE AS driverCode
+		  FROM MST_DRIVER
+		 WHERE DRIVER_NAME=#{driver}
+	</select>
+	
+	<select id="getAttachDriverCode" resultType="String">
+	    SELECT RELATED_COMPY_CODE AS driverCode
+		  FROM MST_RELATED_COMPY
+		 WHERE COMPY_SNAME=#{driver}
+	</select>
+	
+	<insert id="insertOilMsg"  useGeneratedKeys="true" keyProperty="seqNo">
+		 INSERT INTO FUEL_FILLING
+            (
+		            OPERATION_TIME
+		    ,       PLATE_NUM
+		    ,       OPERATION_PSN
+		    ,       ADD_LITERS
+		    ,       UNIT_PRICE
+		    ,       DRIVER_CODE
+		    ,       INNER_FLAG
+		    ,       FUEL_TYPE
+		    ,       STATION
+		    ,       CARD_NO
+		    ,       REMARKS
+		    ,		TANK_STORAGE_PERCENT
+		    ,		CREATE_PSN
+		    ,		CREATE_TIME
+		    )
+		VALUES
+		    (       
+		            #{operationTime}
+		    ,       #{plateNum}
+		    ,       #{operationPsn}
+		    ,       #{addLiters}
+		    ,       #{unitPrice}
+		    ,       #{driver}
+		    ,       #{innerFlag}
+		    ,       #{fuelType}
+		    ,       #{station}
+		    ,       #{cardNo}
+		    ,       #{remarks}
+		    ,		(case when #{tankStorage} != '' then #{tankStorage} else 0 end) 
+		    ,		#{createPsn}
+		    ,		NOW()
+		    )
+		    ;
+	</insert>
+	
+	<update id="updateOilMsg">
+		UPDATE    FUEL_FILLING
+		   SET    OPERATION_TIME       =  #{operationTime}
+		    ,     PLATE_NUM			   =  #{plateNum}
+		    ,     OPERATION_PSN		   =  #{operationPsn}
+		    ,     ADD_LITERS		   =  #{addLiters}
+		 	,     UNIT_PRICE		   =  #{unitPrice}
+		    ,     DRIVER_CODE	       =  #{driver}
+		    ,     INNER_FLAG		   =  #{innerFlag}
+		    ,     FUEL_TYPE			   =  #{fuelType}
+		    ,     STATION			   =  #{station}
+		    ,     CARD_NO			   =  #{cardNo}
+		    ,     REMARKS			   =  #{remarks}
+		    ,     TANK_STORAGE_PERCENT =  (case when #{tankStorage} != '' then #{tankStorage} else 0 end) 
+		    ,     UPDATE_PSN		   =  #{updatePsn}
+		    ,	  UPDATE_TIME		   =  NOW()
+		 WHERE    SEQNO				   =  #{seqNo}
+	</update>
+	
+	<select id="findReviseOilMsg" resultType="OilSearchModel">
+	SELECT  SEQNO 				AS  seqNo
+	     ,  DATE_FORMAT(OPERATION_TIME, '%Y-%m-%d %H:%i')      AS  operationTime
+	     ,  PLATE_NUM			AS  plateNum
+	     ,  DRIVER_CODE			AS  driverCode
+	     ,  FUEL_TYPE			AS  fuelType
+	     ,  STATION				AS  station
+	     ,  CARD_NO				AS  cardNo
+	     ,  ADD_LITERS			AS  addLiters
+	     ,  UNIT_PRICE			AS  unitPrice
+	     ,  REMARKS				AS  remarks
+	     ,  INNER_FLAG		    AS  innerFlag
+	  FROM  FUEL_FILLING
+	 WHERE  SEQNO = #{seqNo}
+	
+	</select>
+	
+	<update id="updateFuelFilling">
+	    UPDATE    FUEL_FILLING
+		   SET    OPERATION_TIME       =  #{operationTime}
+		    ,     PLATE_NUM			   =  #{plateNum}
+		    ,     OPERATION_PSN		   =  #{operationPsn}
+		    ,     ADD_LITERS		   =  #{addLiters}
+		    ,     UNIT_PRICE		   =  #{unitPrice}
+		    ,     DRIVER_CODE	       =  #{driverCode}
+		    ,     INNER_FLAG		   =  #{innerFlag}
+		    ,     FUEL_TYPE			   =  #{fuelType}
+		    ,     STATION			   =  #{station}
+		    ,     CARD_NO			   =  #{cardNo}
+		    ,     REMARKS			   =  #{remarks}
+		    ,     UPDATE_PSN		   =  #{operationPsn}
+		    ,	  UPDATE_TIME		   =  NOW()
+		 WHERE    SEQNO				   =  #{seqNo}
+	</update>
+	
+	<select id="countTrailersByPlateNum" resultType="java.lang.Integer">
+		SELECT count(1) FROM mst_trailer WHERE plate_num = #{plateNum}
+	</select>
+
+	<delete id="deleteFuelFilling">
+		DELETE FROM fuel_filling WHERE seqno = #{seqNo}
+	</delete>
+
+	<delete id="deleteFuelFillingIdLink">
+		DELETE FROM fuel_filling_id_link WHERE fuel_filling_jg_id = #{seqNo}
+	</delete>
+
+	<select id="listDriversByPlateNums" resultType="com.xzg56.jg.modules.mst.oilManagement.model.OilSearchModel">
+		SELECT PLATE_NUM AS plateNum, CURRENT_DRV_CODE AS driverCode FROM mst_trailer WHERE PLATE_NUM in
+		<foreach collection="list" item="item" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</select>
+</mapper>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.zxaddress.dao.ZxAddressManDao">
+	<select id="getZxAddressList" resultType="ZxAddressModel">
+		SELECT
+			R.id,
+			R.name,
+			S1.name AS provinceName,
+			s2.name AS cityName,
+			s3.name AS districtName,
+			s4.name AS countyName,
+			R.address,
+			R.deletedflag,
+			R.contactPerson,
+			R.contactPhone,
+			R.contactPerson2,
+			R.contactPhone2,
+			R.contactPerson3,
+			R.contactPhone3,
+			R.provinceCode,
+			R.cityCode,
+			R.districtCode,
+			R.countyCode,
+			R.relatedCompyCode
+		FROM
+		(SELECT
+			M.id AS id,
+			M.NAME AS name,
+			M.PROVINCE_CODE AS provinceCode,
+			M.CITY_CODE AS cityCode,
+			M.DISTRICT_CODE AS districtCode,
+			M.COUNTY_CODE AS countyCode,
+			M.ADDRESS AS address,
+			M.DELETED_FLAG AS deletedflag,
+			M.CONTACT_PERSON AS contactPerson,
+			M.CONTACT_PHONE AS contactPhone,
+			M.CONTACT_PERSON2 AS contactPerson2,
+			M.CONTACT_PHONE2 AS contactPhone2,
+			M.CONTACT_PERSON3 AS contactPerson3,
+			M.CONTACT_PHONE3 AS contactPhone3,
+			M.related_compy_code AS relatedCompyCode
+		FROM MST_ZX_ADDRESS as M) R
+		LEFT JOIN MST_STD_ADDRESS AS S1 ON S1.code = R.provinceCode
+		LEFT JOIN MST_STD_ADDRESS AS S2 ON S2.code = R.cityCode
+		LEFT JOIN MST_STD_ADDRESS AS S3 ON S3.code = R.districtCode
+		LEFT JOIN MST_STD_ADDRESS AS S4 ON S4.code = R.countyCode
+		WHERE 1=1
+		AND R.deletedflag = "N"
+		<if test="cusCode != null and cusCode != ''">
+			AND (R.relatedCompyCode IS  NULL OR R.relatedCompyCode = #{cusCode})
+		</if>
+		<if test="cusCode == null">
+			AND R.relatedCompyCode IS  NULL
+		</if>
+		<if test="cusCode == ''">
+			AND R.relatedCompyCode IS  NULL
+		</if>
+		<include refid="condition" />
+		<if test="page.orderBy != null and page.orderBy != ''">
+			ORDER BY  ${page.orderBy}
+		</if>
+	</select>
+
+	<sql id="condition">
+		<if test="name != null and name != ''">
+			AND  R.name LIKE CONCAT('%',#{name},'%')
+		</if>
+		<if test="provinceCode != null and provinceCode != ''">
+			AND  R.provinceCode = #{provinceCode}
+		</if>
+		<if test="cityCode != null and cityCode != ''">
+			AND  R.cityCode = #{cityCode}
+		</if>
+		<if test="districtCode != null and districtCode != ''">
+			AND  R.districtCode = #{districtCode}
+		</if>
+		<if test="countyCode != null and countyCode != ''">
+			AND R.countyCode = #{countyCode}
+		</if>
+		<if test="address != null and address != ''">
+			AND R.address LIKE CONCAT('%',#{address},'%')
+		</if>
+		<if test="person != null and person != ''">
+			AND (R.contactPerson LIKE CONCAT('%',#{person},'%') OR R.contactPerson2 LIKE CONCAT('%',#{person},'%') OR R.contactPerson3 LIKE CONCAT('%',#{person},'%'))
+		</if>
+		<if test="phone != null and phone != ''">
+			AND (R.contactPhone LIKE CONCAT('%',#{phone},'%') OR R.contactPhone2 LIKE CONCAT('%',#{phone},'%') OR R.contactPhone3 LIKE CONCAT('%',#{phone},'%'))
+		</if>
+	</sql>
+
+	<sql id="selectCondition">
+		<if test="provinceCode != null and provinceCode != ''">
+			AND  R.province_code = #{provinceCode}
+		</if>
+		<if test="cityCode != null and cityCode != ''">
+			AND  R.city_code = #{cityCode}
+		</if>
+		<if test="cityCode == null or cityCode == ''">
+			AND  (R.city_code is null or R.city_code = '')
+		</if>
+		<if test="districtCode != null and districtCode != ''">
+			AND  R.district_code = #{districtCode}
+		</if>
+		<if test="districtCode == null">
+			AND  (R.district_code is null or R.district_code = '')
+		</if>
+		<if test="countyCode != null and countyCode != ''">
+			AND  R.county_code = #{countyCode}
+		</if>
+		<if test="countyCode == null">
+			AND  (R.county_code is null or R.county_code = '')
+		</if>
+
+	</sql>
+
+	<select id="getZxAddrsDetail" resultType="ZxAddressModel">
+		SELECT
+		 	id
+		 	,`name`
+		 	,province_code AS provinceCode
+		 	,city_code AS cityCode
+		 	,district_code AS districtCode
+		 	,county_code AS countyCode
+		 	,address
+		 	,contact_person AS contactPerson
+		 	,contact_phone AS contactPhone
+		 	,contact_person2 AS contactPerson2
+		 	,contact_phone2 AS contactPhone2
+		 	,contact_person3 AS contactPerson3
+		 	,contact_phone3 AS contactPhone3
+		 	,related_compy_code AS relatedCompyCode
+		FROM mst_zx_address WHERE id = #{id}
+	</select>
+
+	<select id="getZxAddrsInfo" resultType="ZxAddressModel">
+		SELECT name AS text, address AS value from mst_zx_address WHERE id = #{zxAddrsId}
+	</select>
+</mapper>

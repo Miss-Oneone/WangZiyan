@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="deliveryList_subreport1" language="groovy" pageWidth="660" pageHeight="600" columnWidth="660" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true" uuid="a64f4653-6f17-485a-8e9c-4efb52665c76">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="port" class="java.lang.String">
+		<defaultValueExpression><![CDATA[8080]]></defaultValueExpression>
+	</parameter>
+	<field name="piName" class="java.lang.String"/>
+	<field name="bfIncludeFlag" class="java.lang.String"/>
+	<field name="ckIncludeFlag" class="java.lang.String"/>
+	<title>
+		<band height="27">
+			<staticText>
+				<reportElement uuid="40dd6f3e-27f8-4b07-8064-6878bf68ea8e" x="14" y="9" width="100" height="18"/>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[基础运费包干项目]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="39">
+			<rectangle>
+				<reportElement uuid="28e8fa45-32cc-4afb-9ba9-c1a28fa090bd" x="27" y="19" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="65018f85-37de-477b-a388-b8461d08750e" x="127" y="19" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="f71eae32-984d-47b6-b205-61e7ed1a2052" x="227" y="19" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="b611d357-c495-4141-b178-e33d103fb378" x="327" y="19" width="100" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="e52c37f3-3622-4731-aea6-dd3d599f76ba" x="27" y="19" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[项目名称]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="5ff3afb9-cff4-4ff7-a5ad-1ae8c6bbbffb" x="127" y="19" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[价格标准]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="6e8c7120-11b0-4399-8ee5-74ab5e96b0c7" x="227" y="19" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[兆冠包干标准]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="0b8c9ba6-4bcf-4e68-bb44-ceafcbcd645c" x="327" y="19" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[客户核定包干]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="67e5c53c-c4ed-4674-9cbd-bb7438b80679" x="14" y="7" width="616" height="1"/>
+			</line>
+			<line>
+				<reportElement uuid="b0c76f28-2b5b-4c37-9f67-047ed6ce8941" stretchType="RelativeToBandHeight" x="630" y="7" width="1" height="32"/>
+			</line>
+			<line>
+				<reportElement uuid="0d8a9674-3831-422f-a52b-bdd6888eeece" stretchType="RelativeToBandHeight" x="14" y="7" width="1" height="32"/>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="8af56487-6b1b-4bac-8f29-92b52a2fb9db" x="27" y="0" width="100" height="20"/>
+			</rectangle>
+			<textField>
+				<reportElement uuid="a52b2e87-1a06-4bd3-ad7a-ce4b6a18d049" x="27" y="0" width="100" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{piName}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement uuid="44c38436-cfef-42ee-a558-e4d147198ac6" x="127" y="0" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="b0032b6c-b46a-45af-9c05-50421812708c" x="227" y="0" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="9f9186bd-4384-44fb-b7d9-b11b729295d2" x="327" y="0" width="100" height="20"/>
+			</rectangle>
+			<line>
+				<reportElement uuid="f2667eed-04c4-4b6b-af67-c9cebb719e41" stretchType="RelativeToBandHeight" x="630" y="0" width="1" height="20"/>
+			</line>
+			<line>
+				<reportElement uuid="35eb73f3-900d-4696-a570-fec63c00facb" stretchType="RelativeToBandHeight" x="14" y="0" width="1" height="20"/>
+			</line>
+			<rectangle>
+				<reportElement uuid="b83ce9ec-f984-4e43-8584-c932d2c77330" x="267" y="2" width="16" height="16"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="847f3a03-b1d1-4404-895a-b7aab2b0a3c4" x="368" y="2" width="16" height="16"/>
+			</rectangle>
+			<image>
+				<reportElement uuid="e7bc68c0-b2f4-4c5e-99c1-b17390ab2a1a" x="268" y="3" width="14" height="15">
+					<printWhenExpression><![CDATA[new java.lang.Boolean($F{bfIncludeFlag}.equals("Y"))]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA["http://localhost"+$P{port}+"/zhaoguan/static/images/check.jpg"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement uuid="9be9be1f-f161-421c-a432-cd94bbf6dc3b" x="369" y="3" width="14" height="15">
+					<printWhenExpression><![CDATA[new java.lang.Boolean($F{ckIncludeFlag}.equals("Y"))]]></printWhenExpression>
+				</reportElement>
+				<imageExpression><![CDATA["http://localhost:"+$P{port}+"/zhaoguan/static/images/check.jpg"]]></imageExpression>
+			</image>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="8">
+			<line>
+				<reportElement uuid="5f524c17-431a-4b48-886e-cb271387bed5" x="14" y="7" width="616" height="1"/>
+			</line>
+			<line>
+				<reportElement uuid="39f6a8d7-41b5-47fe-930d-f85ee62a2968" stretchType="RelativeToBandHeight" x="14" y="0" width="1" height="7"/>
+			</line>
+			<line>
+				<reportElement uuid="0fdd3f72-15b7-410d-a47c-ef89ca746fcd" stretchType="RelativeToBandHeight" x="630" y="0" width="1" height="7"/>
+			</line>
+		</band>
+	</columnFooter>
+</jasperReport>

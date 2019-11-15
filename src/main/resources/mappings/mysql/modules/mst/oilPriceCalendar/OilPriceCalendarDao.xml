@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.oilPriceCalendar.dao.OilPriceCalendarDao">
+
+    <select id="searchOilPriceList" resultType="OilPriceCalendarModel">
+        SELECT QUOTEDATE as effectiveDate
+        , mfp.FUEL_PRICE_TYPE as oilPriceType
+        , mfp.FUEL_TYPE as oilType
+        , mfp.APPROVAL_STATUS
+        , td.label as oilPriceTypeLabel
+        , td2.label as oilTypeLabel
+        , td3.label as approvalStatusLabel
+        , mfp.AVE_FUEL_PRICE as avgPrice
+        , price as lastPrice
+        , REMARKS as remarks
+        , tu.name as createBy
+        , mfp.CREATE_TIME as createTime
+        , tu2.name as updateBy
+        , mfp.UPDATE_TIME as updateTime
+        , mfp.INNER_FLAG as innerFlag
+        FROM mst_fuel_price mfp
+        LEFT JOIN t_dict td on td.groupno = 'OIL_PRICE_TYPE' and td.`value` = mfp.FUEL_PRICE_TYPE
+        LEFT JOIN t_dict td2 on td2.groupno = 'OIL_TYPE' and td2.`value`= mfp.FUEL_TYPE
+        LEFT JOIN t_dict td3 on td3.groupno = 'OIL_APPROVAL_STATUS' and td3.`value`= mfp.APPROVAL_STATUS
+        LEFT JOIN t_user tu on tu.id = mfp.CREATE_PSN
+        LEFT JOIN t_user tu2 on tu2.id = mfp.UPDATE_PSN
+        WHERE 1 = 1
+        <if test="createTimeFr != null and createTimeFr != ''">
+            AND mfp.CREATE_TIME >= #{createTimeFr}
+        </if>
+        <if test="createTimeTo != null and createTimeTo != ''">
+            AND mfp.CREATE_TIME &lt;= #{createTimeTo}
+        </if>
+        <if test="createBy != null and createBy != ''">
+            AND mfp.CREATE_PSN = #{createBy}
+        </if>
+        <if test="effectiveDateFr != null and effectiveDateFr != ''">
+            AND mfp.QUOTEDATE >= #{effectiveDateFr}
+        </if>
+        <if test="effectiveDateTo != null and effectiveDateTo != ''">
+            AND mfp.QUOTEDATE &lt;= #{effectiveDateTo}
+        </if>
+        <if test="approvalStatus != null and approvalStatus != ''">
+            AND mfp.APPROVAL_STATUS = #{approvalStatus}
+        </if>
+    </select>
+    <select id="searchAvgPrice" resultType="String">
+        SELECT sum(fpt.TAKE_TONS*fp.PRICE)/sum(fpt.TAKE_LITRE)
+        FROM fuel_purchase_take fpt
+        JOIN fuel_purchase fp on fpt.fuel_purchase_ID = fp.ID
+        WHERE DATE_FORMAT(fpt.TAKE_DATE, '%Y-%m') &lt;= #{searchDate}
+        group by DATE_FORMAT(TAKE_DATE, '%Y-%m')
+        ORDER BY TAKE_DATE desc
+        LIMIT 1
+    </select>
+
+    <select id="getOilPrice" resultType="OilPriceCalendarModel">
+        SELECT
+        FUEL_PRICE_TYPE as oilPriceType
+        , price as lastPrice
+        , REMARKS as remarks
+        FROM mst_fuel_price
+        WHERE QUOTEDATE = #{effectiveDate}
+        AND FUEL_TYPE = #{oilType}
+        AND INNER_FLAG = #{innerFlag}
+        AND APPROVAL_STATUS = #{approvalStatus}
+    </select>
+
+
+    <insert id="insertOilPrice">
+        INSERT INTO mst_fuel_price
+        (
+        QUOTEDATE
+        , FUEL_TYPE
+        , PRICE
+        , APPROVAL_STATUS
+        , FUEL_PRICE_TYPE
+        , AVE_FUEL_PRICE
+        , INNER_FLAG
+        , REMARKS
+        , CREATE_PSN
+        , CREATE_TIME
+        )
+        VALUES
+        (
+        #{effectiveDate}
+        , #{oilType}
+        , #{lastPrice}
+        , #{approvalStatus}
+        , #{oilPriceType}
+        , #{avgPrice}
+        , #{innerFlag}
+        , #{remarks}
+        , #{createBy}
+        , now()
+        )
+
+    </insert>
+
+    <update id="updateOilPrice">
+        update mst_fuel_price
+        set
+        price = #{lastPrice}
+        , REMARKS = #{remarks}
+        , UPDATE_PSN = #{updateBy}
+        , UPDATE_TIME = now()
+        WHERE 1 = 1
+        AND QUOTEDATE = #{effectiveDate}
+        AND FUEL_TYPE = #{oilType}
+        AND INNER_FLAG = #{innerFlag}
+        AND APPROVAL_STATUS = #{approvalStatus}
+    </update>
+
+    <update id="approvalOilPrice">
+        update mst_fuel_price
+        set
+        APPROVAL_STATUS = '2'
+        , UPDATE_PSN = #{updateBy}
+        , UPDATE_TIME = now()
+        WHERE 1 = 1
+        AND QUOTEDATE = #{effectiveDate}
+        AND FUEL_TYPE = #{oilType}
+        AND INNER_FLAG = #{innerFlag}
+        AND APPROVAL_STATUS = #{approvalStatus}
+    </update>
+
+    <delete id="delOilPrice">
+        DELETE
+        FROM
+        mst_fuel_price
+        WHERE
+        1 = 1
+        AND QUOTEDATE = #{effectiveDate}
+        AND FUEL_TYPE = #{oilType}
+        AND INNER_FLAG = #{innerFlag}
+        AND APPROVAL_STATUS = #{approvalStatus}
+    </delete>
+
+    <select id="countDriverSalary" resultType="int">
+        SELECT count(1)
+        FROM drv_salary ds
+        WHERE ds.salary_ym = #{yearMonth}
+    </select>
+</mapper>

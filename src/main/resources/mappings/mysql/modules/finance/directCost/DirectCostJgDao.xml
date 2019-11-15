@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.finance.directcostmanage.dao.DirectCostJgDao">
+    <sql id="condition">
+        AND F.FEE_TYPE = '1'
+        <if test="businessDateFrom != null and businessDateFrom != ''">
+            AND DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') &gt;= #{businessDateFrom}
+        </if>
+        <if test="businessDateTo != null and businessDateTo != ''">
+            AND DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') &lt;=#{businessDateTo}
+        </if>
+        <if test="createTimeFrom != null and createTimeFrom != ''">
+            AND DATE_FORMAT(F.CREATE_TIME,'%Y-%m-%d') &gt;=#{createTimeFrom}
+        </if>
+        <if test="createTimeTo != null and createTimeTo != ''">
+            AND DATE_FORMAT(F.CREATE_TIME,'%Y-%m-%d') &lt;=#{createTimeTo}
+        </if>
+        <if test="orderNo != null and orderNo != ''">
+            AND OH.ORDER_NO like CONCAT('%',#{orderNo},'%')
+        </if>
+        <if test="businessNo1 != null and businessNo1 != ''">
+            AND OH.BUSINESS_NO1 like CONCAT('%',#{businessNo1},'%')
+        </if>
+        <if test="businessNo2 != null and businessNo2 != ''">
+            AND OH.BUSINESS_NO2 like CONCAT('%',#{businessNo2},'%')
+        </if>
+        <if test="piCode != null and piCode != ''">
+            AND F.PI_CODE = #{piCode}
+        </if>
+        <if test="cusCode != null and cusCode != ''">
+            AND OH.CUS_CODE = #{cusCode}
+        </if>
+        <if test="relatedCompyCode != null and relatedCompyCode != ''">
+            AND F.COMPY_CODE = #{relatedCompyCode}
+        </if>
+        <if test="createPsn != null and createPsn != ''">
+            AND F.CREATE_BY = #{createPsn}
+        </if>
+        <if test="binsApprovalFlag != null and binsApprovalFlag != ''">
+            AND F.BINS_APPROVAL_FLAG IN (${binsApprovalFlag})
+        </if>
+        <if test="amount != null and amount != ''">
+            AND F.AMOUNT${sign}#{amount}
+        </if>
+        <if test="feeStatus != null and feeStatus != ''">
+            AND F.FEE_STATUS IN (${feeStatus})
+        </if>
+        <if test="binsApprovalPsn != null and binsApprovalPsn != ''">
+            AND F.BINS_APPROVAL_PSN = (SELECT NAME FROM t_user WHERE user_type = '010' AND id = #{binsApprovalPsn})
+        </if>
+        <if test="interGoods != null and interGoods != ''">
+            AND OH.INTER_GOODS = #{interGoods}
+        </if>
+        <if test="plateNum != null and plateNum != ''">
+            AND OH.PLATE_NUM = #{plateNum}
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            AND OH.DRIVER_CODE = #{driverCode}
+        </if>
+        <if test="containerType != null and containerType != ''">
+            AND OH.CONTAINER_TYPE = #{containerType}
+        </if>
+    </sql>
+    <select id="getDirectCostList" resultType="DirectCostJgModel">
+        SELECT * FROM (
+            SELECT T.*
+                    ,CASE WHEN (IFNULL(T.fiDoneAmount,0.00) = 0) THEN '1'
+                    WHEN (IFNULL(T.fiDoneAmount,0.00)= T.AMOUNT) THEN '3'
+                    ELSE '2' END AS fiDoneSts
+            FROM (
+                SELECT OH.ORDER_NO AS orderNo
+                ,OH.STATUS AS ordSts
+                ,CUS.COMPY_SNAME AS cusName
+                ,DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') AS businessDate
+                ,OH.BUSINESS_NO1 AS businessNo1
+                ,OH.BUSINESS_NO2 AS businessNo2
+                ,F.PAYMENT_TYPE AS paymentType
+                ,F.PI_CODE AS piCode
+                ,F.PI_NAME AS piName
+                ,F.AMOUNT AS amount
+                ,MRC.COMPY_SNAME AS compySname
+                ,MRC.COMPY_FNAME AS compyFname
+                ,MRC.RELATED_COMPY_CODE AS relatedCompyCode
+                ,MRC.RELATED_COMPY_TYPE AS relatedCompyType
+                ,TU1.name AS createPsn
+                ,DATE_FORMAT(F.CREATE_TIME,'%Y-%m-%d %H:%i') AS createTimeFmt
+                ,TU2.name AS updatePsn
+                ,DATE_FORMAT(F.UPDATE_TIME,'%Y-%m-%d %H:%i') AS updateTimeFmt
+                ,F.BINS_APPROVAL_FLAG AS binsApprovalFlag
+                ,F.ID AS id
+                ,F.SYSTEM_AUTO_FLAG AS systemAutoFlag
+                ,F.CREATE_BY AS createBy
+                ,F.FEE_STATUS as feeStatus
+                ,F.REMARKS as remarks
+                ,(SELECT SUM(bd.fi_done_amount) FROM bill_detail bd
+                WHERE bd.related_id=F.id AND bd.payment_type = F.payment_type
+                AND bd.fee_type = F.fee_type) AS fiDoneAmount
+                ,F.BILL_AMOUNT AS billAmount
+                ,F.INVOICE_ISSUE_NEED_FLAG AS invoiceIssueNeedFlag
+                ,OH.INTER_GOODS AS interGoods
+                ,OH.PLATE_NUM AS plateNum
+                ,MD.COMPY_SNAME AS driverName
+                ,OH.CONTAINER_TYPE AS containerType
+                FROM ORD_RECEIPTS_PAYMENTS F
+                INNER JOIN MST_RELATED_COMPY MRC ON MRC.RELATED_COMPY_CODE = F.COMPY_CODE
+                INNER JOIN ORD_HEADER OH ON OH.ORDER_NO = F.ORDER_NO
+                INNER JOIN MST_RELATED_COMPY CUS ON CUS.RELATED_COMPY_CODE = OH.CUS_CODE
+                LEFT JOIN T_USER TU1 ON F.CREATE_BY = TU1.ID
+                LEFT JOIN T_USER TU2 ON F.UPDATE_BY = TU2.ID
+                LEFT JOIN MST_RELATED_COMPY MD ON OH.DRIVER_CODE = MD.RELATED_COMPY_CODE
+                WHERE F.ACTIVE_FLAG = 'Y'
+                <include refid="condition"/>
+                <if test="paymentType != null and paymentType != ''">
+                    AND F.PAYMENT_TYPE=#{paymentType}
+                </if>
+            ) T
+        ) L
+        WHERE 1=1
+        <if test="fiDoneSts != null and fiDoneSts != ''">
+            AND L.fiDoneSts in (${fiDoneSts})
+        </if>
+        <if test="page.orderBy != null and page.orderBy != ''">
+            ORDER BY ${page.orderBy}
+        </if>
+    </select>
+
+    <select id="getAmount" resultType="DirectCostJgModel">
+        SELECT L.paymentType
+        ,SUM(L.AMOUNT) AS AMOUNT
+        ,SUM(L.billAmount) AS billAmount
+        FROM (
+        SELECT T.*
+        ,CASE WHEN (IFNULL(T.fiDoneAmount,0.00) = 0) THEN '1'
+        WHEN (IFNULL(T.fiDoneAmount,0.00)= T.AMOUNT) THEN '3'
+        ELSE '2' END AS fiDoneSts
+        FROM (
+        SELECT F.ID AS id
+        ,MAX(F.PAYMENT_TYPE) AS paymentType
+        ,MAX(F.AMOUNT) AS amount
+        ,(SELECT SUM(bd.fi_done_amount) FROM bill_detail bd
+        WHERE bd.related_id=F.id AND bd.payment_type = F.payment_type
+        AND bd.fee_type = F.fee_type) AS fiDoneAmount
+        ,MAX(F.BILL_AMOUNT) AS billAmount
+        FROM ORD_RECEIPTS_PAYMENTS F
+        INNER JOIN MST_RELATED_COMPY MRC ON MRC.RELATED_COMPY_CODE = F.COMPY_CODE
+        INNER JOIN ORD_HEADER OH ON OH.ORDER_NO = F.ORDER_NO
+        INNER JOIN MST_RELATED_COMPY CUS ON CUS.RELATED_COMPY_CODE = OH.CUS_CODE
+        LEFT JOIN T_USER TU1 ON F.CREATE_BY = TU1.ID
+        LEFT JOIN T_USER TU2 ON F.UPDATE_BY = TU2.ID
+        WHERE F.ACTIVE_FLAG = 'Y'
+        <include refid="condition"/>
+        <if test="paymentType != null and paymentType != ''">
+            AND F.PAYMENT_TYPE=#{paymentType}
+        </if>
+        GROUP BY F.ID
+        ) T
+        ) L
+        WHERE 1=1
+        <if test="fiDoneSts != null and fiDoneSts != ''">
+            AND L.fiDoneSts in (${fiDoneSts})
+        </if>
+        <if test="page.orderBy != null and page.orderBy != ''">
+            ORDER BY ${page.orderBy}
+        </if>
+        GROUP BY L.paymentType
+    </select>
+</mapper>

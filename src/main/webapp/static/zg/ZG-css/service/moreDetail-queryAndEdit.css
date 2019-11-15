@@ -1,0 +1,49 @@
+/*------tbl1------*/
+.tbl1FirstColumn{
+	width:15%;
+}
+.tbl1SecondColumn{
+	width:20%;
+}
+
+/*------tbl2------*/
+.tbl2FirstColumn{
+	width:15%;
+}
+.tbl2SecondColumn{
+	width:18%;
+}
+.tbl2ThirdColumn{
+	width:30%;
+}
+
+/*------tbl3------*/
+.tbl3FirstColumn{
+	width:15%;
+}
+.tbl3SecondColumn{
+	width:20%;
+}
+.tbl3ThirdColumn{
+	width:10%;
+}
+
+/*------common------*/
+/*文本框，选择下拉框宽度*/
+.inputText{
+	width:146px;
+}
+/*文本框地址宽度*/
+.inputLongText{
+	width:300px;
+}
+/*文本水平位置*/
+#textCenter{
+	text-align:center;
+}
+#textLeft{
+	text-align:left;
+}
+#textRight{
+	text-align:right;
+}

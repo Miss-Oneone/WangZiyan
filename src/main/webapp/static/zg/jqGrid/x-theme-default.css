@@ -1,0 +1,152 @@
+@CHARSET "UTF-8";
+body{
+	overflow:hidden;
+}
+.x-form-table{
+	position:relative;
+	left:0px;
+	top:0px;
+	width:95%;
+	margin:0px;
+	cellpadding:0px;
+	cellmargin:0px;
+}
+.x-form{
+	position:relative;
+	left:0px;
+	top:0px;	
+	margin:0px;
+	cellpadding:0px;
+	cellmargin:0px;
+}
+.x-form-tr{
+	height:25px;
+}
+.x-form-td{
+	vertical-align:top;
+	white-space:nowrap;
+	width:60px;
+}
+.x-inlinebutton{
+	height:20px;
+	width:28px;
+	border:1px solid #1480A4;
+	cursor:pointer;
+}
+.x-submitbutton{	
+	height:22px;
+	background-color:#76C6E2;
+	background-image: url(image/blue.png);	
+	border:1px solid #1480A4;
+	color: #FFFFFF;
+	cursor:pointer;
+	line-height: 0.9;
+	margin-left: 1px;
+	margin-right: 2px;
+}
+
+.x-button{	
+	height:25px;
+	background-color:#5556E2;
+	background-image: url(image/button.gif);	
+	border:1px solid #1480A4;
+	color: #FFFFFF;
+	cursor:pointer;
+}
+
+.x-label{
+
+}
+.x-tip { 
+	top:0px;
+	left:0px;
+	height:16px;
+	width:10px;
+	position:absolute;
+	color:red; 
+	border: 0px solid transparent; 
+	padding:1px;
+	padding-left:16px;
+	z-index:1;
+	white-space:nowrap;
+	background-repeat: no-repeat;
+	display:none;
+}
+.x-toolbar{
+	height:35px;
+	background-color:#eeeeee;
+	border: 1px solid transparent; 
+}
+
+.x-bottomToolbar{
+	position:absolute;
+	bottom:4px; 
+	left:4px;
+}
+.x-toolbox{
+  position:absolute;
+  background-color:#feeeee;
+  border: 1px solid transparent;
+}
+.x-toolbox-header{
+  color:#ffffff;
+  background-color:blue;
+  height:20px; 
+  line-height:20px;
+  text-align:center;
+}
+.x-input, .x-password, .x-buttonedit, .x-dateedit, .x-datetimeedit, .x-textarea, .x-select, .x-list, .x-file{
+	width:100%;
+	border: 1px solid; 
+}
+.x-buttonedit{
+	background: url("../images/showmore.gif") no-repeat right;
+	cursor:pointer;
+	padding-right:0px;
+}
+
+.x-dialog{
+	position:absolute;
+	/* white-space:pre-wrap; */
+}
+
+.x-input-readonly{
+	background-color: #eeeeee;
+}
+.x-dialog-message{
+	position:relative;
+	left:36px;
+	text-align:left;
+	margin:5px;
+	word-break:normal;
+}
+.x-dialog-icon{
+	position:absolute;
+	height:32px;
+	width:32px;
+	padding:0px;
+	border: 0px solid transparent; 
+	background-repeat: no-repeat;
+}
+.x-dialog-icon-info{
+	background-image: url(/webx/common/icons/dlg/dlg-info.gif);
+}
+.x-dialog-icon-error{
+	background-image: url(/webx/common/icons/dlg/dlg-error.gif);
+}
+.x-dialog-icon-question{
+	background-image: url(/webx/common/icons/dlg/dlg-question.gif);
+}
+.x-dialog-icon-warning{
+	background-image: url(/webx/common/icons/dlg/dlg-warning.gif);
+}
+.x-tip-label{
+	color:red;
+}
+th.ui-th-column div  
+{  
+    /* jqGrid columns name wrap  */  
+    white-space:normal !important;  
+    height:auto !important;  
+    padding:0px;  
+}

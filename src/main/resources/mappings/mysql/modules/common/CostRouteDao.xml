@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.CostRouteDao">
+    <select id="get" resultType="CostRoute">
+        SELECT * FROM  mst_cost_route WHERE id = #{id}
+    </select>
+
+    <select id="findByAddress" resultType="CostRoute">
+        SELECT * FROM mst_cost_route a WHERE valid_flag = 'Y'
+        <if test="trailerBelongType != null and trailerBelongType != ''">
+            <if test="trailerBelongType == '1'.toString()">
+                AND a.TRAILER_BELONG_TYPE = '0'
+            </if>
+            <if test="trailerBelongType != '1'.toString()">
+                AND a.TRAILER_BELONG_TYPE = #{trailerBelongType}
+            </if>
+        </if>
+        <if test="fromProvinceCode != null and fromProvinceCode != ''">
+            AND a.FROM_PROVINCE_CODE = #{fromProvinceCode}
+        </if>
+        <if test="fromProvinceCode == null">
+            AND (a.FROM_PROVINCE_CODE IS NULL OR a.FROM_PROVINCE_CODE = '')
+        </if>
+        <if test="fromCityCode != null and fromCityCode != ''">
+            AND a.FROM_CITY_CODE = #{fromCityCode}
+        </if>
+        <if test="fromCityCode == null">
+            AND (a.FROM_CITY_CODE IS NULL OR a.FROM_CITY_CODE = '')
+        </if>
+        <if test="fromDistrictCode != null and fromDistrictCode != ''">
+            AND a.FROM_DISTRICT_CODE = #{fromDistrictCode}
+        </if>
+        <if test="fromDistrictCode == null">
+            AND (a.FROM_DISTRICT_CODE IS NULL OR a.FROM_DISTRICT_CODE = '')
+        </if>
+        <if test="fromCountyCode != null and fromCountyCode != ''">
+            AND a.FROM_COUNTY_CODE = #{fromCountyCode}
+        </if>
+        <if test="fromCountyCode == null">
+            AND (a.FROM_COUNTY_CODE IS NULL OR a.FROM_COUNTY_CODE = '')
+        </if>
+        <if test="toProvinceCode != null and toProvinceCode != ''">
+            AND a.TO_PROVINCE_CODE = #{toProvinceCode}
+        </if>
+        <if test="toProvinceCode == null">
+            AND (a.TO_PROVINCE_CODE IS NULL OR a.TO_PROVINCE_CODE = '')
+        </if>
+        <if test="toCityCode != null and toCityCode != ''">
+            AND a.TO_CITY_CODE = #{toCityCode}
+        </if>
+        <if test="toCityCode == null">
+            AND (a.TO_CITY_CODE IS NULL OR a.TO_CITY_CODE = '')
+        </if>
+        <if test="toDistrictCode != null and toDistrictCode != ''">
+            AND a.TO_DISTRICT_CODE = #{toDistrictCode}
+        </if>
+        <if test="toDistrictCode == null">
+            AND (a.TO_DISTRICT_CODE IS NULL OR a.TO_DISTRICT_CODE = '')
+        </if>
+        <if test="toCountyCode != null and toCountyCode != ''">
+            AND a.TO_COUNTY_CODE = #{toCountyCode}
+        </if>
+        <if test="toCountyCode == null">
+            AND (a.TO_COUNTY_CODE IS NULL OR a.TO_COUNTY_CODE = '')
+        </if>
+    </select>
+</mapper>

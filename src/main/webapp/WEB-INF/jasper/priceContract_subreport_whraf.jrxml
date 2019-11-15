@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="deliveryList_subreport3" language="groovy" pageWidth="660" pageHeight="600" columnWidth="660" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isIgnorePagination="true" uuid="de0475af-3483-4bd4-802c-f4f62ae3beeb">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<field name="whraf" class="java.lang.String"/>
+	<title>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="414a0e8c-33fe-4b2d-9d2e-5bf42f222280" x="14" y="10" width="50" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[基础运费]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="40" splitType="Stretch">
+			<rectangle>
+				<reportElement uuid="f090f9ef-1701-49f4-be06-d9f406c79c6d" stretchType="RelativeToBandHeight" x="23" y="20" width="100" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="1d7d0881-8dd7-409c-8684-deb11279e255" x="23" y="20" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[ 码头列表]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="e5057f8c-9d35-4c29-b815-a7447d796fae" x="14" y="8" width="616" height="1"/>
+			</line>
+			<line>
+				<reportElement uuid="29301da2-628a-4f50-822a-bf9c6a39518a" stretchType="RelativeToBandHeight" x="14" y="8" width="1" height="32"/>
+			</line>
+			<line>
+				<reportElement uuid="f0943071-794c-45a5-81fc-5e1a13b37360" stretchType="RelativeToBandHeight" x="630" y="8" width="1" height="32"/>
+			</line>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<line>
+				<reportElement uuid="8082a62b-74d5-490b-8020-b979074a60da" stretchType="RelativeToBandHeight" x="14" y="0" width="1" height="20"/>
+			</line>
+			<line>
+				<reportElement uuid="d36dd734-bb15-4773-bdee-f229def63e89" stretchType="RelativeToBandHeight" x="630" y="0" width="1" height="20"/>
+			</line>
+			<rectangle>
+				<reportElement uuid="e6938448-ebd3-40ec-917c-4965b93789bb" stretchType="RelativeToBandHeight" x="23" y="0" width="100" height="20"/>
+			</rectangle>
+			<textField>
+				<reportElement uuid="6f83b1d9-f9cf-483b-8a02-7244da577713" x="23" y="0" width="100" height="20"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{whraf}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Receipt2_subreport1" language="groovy" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="9cfaf5eb-ab95-4d82-a257-142f569d2042">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="addrList" class="java.util.List"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="nodeType" class="java.lang.String"/>
+	<field name="nodeTypeName" class="java.lang.String"/>
+	<field name="addrsAbbr" class="java.lang.String"/>
+	<field name="addrsFull" class="java.lang.String"/>
+	<field name="contactor" class="java.lang.String"/>
+	<field name="phone1" class="java.lang.String"/>
+	<field name="swingCfFlag" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="20" uuid="0a70ff55-e546-4964-b519-41bc017b96b0"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="0" width="60" height="20" uuid="47340b3e-37e3-4914-bbe1-b2aee147d9d6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[地址]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="60" y="0" width="50" height="20" uuid="16d17d2b-8593-49de-8933-f8a597b0d5b5"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["装货" + $V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="110" y="0" width="242" height="20" uuid="0d51377d-b913-4e4c-9aff-4c3b9ff72af0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{addrsFull}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="352" y="0" width="50" height="20" uuid="0c4f25a3-299d-4086-adba-b31f6f6f0e5a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle" markup="none">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{contactor}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="402" y="0" width="123" height="20" uuid="c9ef3c04-3f52-452d-97a5-073528bd9ccd"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{phone1}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="525" y="0" width="30" height="20" uuid="be67d010-6292-48f2-947f-7551f23578fa"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="宋体" size="10" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new java.lang.Boolean($F{swingCfFlag}.equals("Y")) ? "甩" : "" )]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="60" y="0" width="1" height="20" uuid="4b7aa842-f5da-48cc-84fe-74a322d3951a"/>
+			</line>
+			<line>
+				<reportElement x="110" y="0" width="1" height="20" uuid="28ebee30-cc34-4251-8731-b6d72e98350c"/>
+			</line>
+			<line>
+				<reportElement x="352" y="0" width="1" height="20" uuid="4041625c-607b-44cf-aca5-13b3e848dd95"/>
+			</line>
+			<line>
+				<reportElement x="402" y="0" width="1" height="20" uuid="29b723f4-cdcb-473d-ada4-849cc657d64b"/>
+			</line>
+			<line>
+				<reportElement x="525" y="0" width="1" height="20" uuid="d6a10d7d-8969-480d-855d-732ee283abcb"/>
+			</line>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

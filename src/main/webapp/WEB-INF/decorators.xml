@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/views">
+
+	<!-- 默认装饰页面, 在需要装饰的页面增加<meta name="decorator" content="default"/> -->
+	<decorator name="default" page="layouts/default_sunsail.jsp" />
+	<decorator name="default_base" page="layouts/default_base.jsp" />
+
+	<!-- 兆冠装饰器 -->
+	<decorator name="default_zg" page="layouts/default_zg.jsp" />
+
+</decorators>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.bankAccount.dao.BankAccountDao">
+    <select id="findBankAccountList" resultType="BankAccountModel">
+        select
+            ACCOUNT_NO AS accountNo,
+            ACCOUNT_NAME AS accountName,
+            BANK_BRANCH AS bankBranch,
+            BANK AS bank,
+            AMOUNT_RMB AS amountRmb,
+            AMOUNT_US AS amountUs,
+            CJ_NO_PREFIX AS cjNoPrefix,
+            PUBLIC_SIGN AS publicSign,
+            CREATE_BY AS createBy,
+            CREATE_TIME AS createTime,
+            UPDATE_BY AS updateBy,
+            UPDATE_TIME AS updateTime
+        FROM mst_bank_account
+    </select>
+</mapper>

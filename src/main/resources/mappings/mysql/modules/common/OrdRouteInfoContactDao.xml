@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.OrdRouteInfoContactDao">
+
+    <select id="get" resultType="OrdRouteInfoContact">
+        SELECT * FROM ord_route_info_contact WHERE id = #{id}
+    </select>
+
+    <select id="listByRouteInfoId" resultType="OrdRouteInfoContact">
+        SELECT * FROM ord_route_info_contact WHERE ord_route_info_id = #{routeInfoId}
+    </select>
+
+    <delete id="deleteByRouteInfoId">
+        DELETE FROM ord_route_info_contact WHERE ord_route_info_id = #{routeInfoId}
+    </delete>
+</mapper>

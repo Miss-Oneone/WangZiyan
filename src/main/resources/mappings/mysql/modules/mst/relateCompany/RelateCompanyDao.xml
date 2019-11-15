@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.relateCompany.dao.RelateCompanyDao" >
+	<select id="selectRelatedCompany" resultType="RelateCompanyModel">
+		SELECT
+			mrc.RELATED_COMPY_CODE AS relatedCompyCode,
+			mrc.RELATED_COMPY_TYPE AS relatedCompyType,
+		    CASE WHEN mrc.RELATED_COMPY_TYPE = 'C' THEN 1 ELSE 2 END AS typeOrderByFlag,
+			mrc.COMPY_SNAME AS compySname,
+			mrc.COMPY_FNAME AS compyFname,
+			mrc.ACTIVE_FLAG AS activeFlag,
+			mrc.CREATE_TIME AS createTime,
+			tu. NAME AS createPsn,
+			mrcp.RELATED_PSN_NAME AS psnName,
+			mrcp.RELATED_PSN_TEL1 AS psnPhone1,
+			mrcp.RELATED_PSN_TEL2 AS psnPhone2,
+			mrcp.RELATED_PSN_TEL3 AS psnPhone3,
+			tu1.NAME AS updatePsn,
+			mrc.UPDATE_TIME AS updateTime
+		FROM
+			mst_related_compy mrc
+		LEFT JOIN mst_related_compy_psn mrcp ON mrcp.RELATED_COMPY_CODE = mrc.RELATED_COMPY_CODE
+		LEFT JOIN t_user tu ON tu.id = mrc.CREATE_BY
+		LEFT JOIN t_user tu1 ON tu1.id = mrc.UPDATE_BY
+		WHERE 1 = 1
+		<if test="compySname != null and compySname != ''">
+			AND mrc.COMPY_SNAME LIKE CONCAT('%',#{compySname},'%')
+		</if>
+
+		<if test="compyFname != null and compyFname != ''">
+			AND mrc.COMPY_FNAME LIKE CONCAT('%',#{compyFname},'%')
+		</if>
+
+		<if test="relatedCompyType != null and relatedCompyType != ''">
+			AND mrc.RELATED_COMPY_TYPE = #{relatedCompyType}
+		</if>
+		<if test="activeFlag != null and activeFlag != ''">
+			AND mrc.ACTIVE_FLAG = #{activeFlag}
+		</if>
+		<if test="psnName != null and psnName != ''">
+			AND mrcp.RELATED_PSN_NAME LIKE CONCAT('%', #{psnName},'%')
+		</if>
+		<if test="psnPhone != null and psnPhone != ''">
+			AND (mrcp.RELATED_PSN_TEL1 LIKE CONCAT('%', #{psnPhone},'%') or mrcp.RELATED_PSN_TEL2 LIKE CONCAT('%', #{psnPhone},'%') or mrcp.RELATED_PSN_TEL3 LIKE CONCAT('%', #{psnPhone},'%'))
+		</if>
+		GROUP BY mrc.RELATED_COMPY_CODE
+		ORDER BY typeOrderByFlag,mrc.RELATED_COMPY_TYPE,mrc.CREATE_TIME DESC
+		<if test="page.orderBy !=null and page.orderBy !=''">
+			,${page.orderBy}
+		</if>
+	</select>
+
+	<select id="findRelatedCompanyByCode" resultType="RelateCompanyModel">
+		SELECT
+			mrc.RELATED_COMPY_CODE AS relatedCompyCode,
+			RELATED_COMPY_TYPE AS relatedCompyType,
+			COMPY_SNAME AS compySname,
+			COMPY_FNAME AS compyFname,
+			MRC.ACTIVE_FLAG AS activeFlag,
+			(SELECT user_code FROM t_user WHERE id = (SELECT USER_ID FROM mst_driver WHERE DRIVER_CODE = #{relatedCompyCode})) as helperCode,
+			(select SFZ_NO from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as sfzNo,
+			(select DRV_LICENCE_NO from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as drvLicenceNo,
+			(select DRV_LICENCE_LEVEL from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as drvLicenceLevel,
+			(select DRV_LICENCE_YEAR from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as drvLicenceYear,
+			(select PHONE1 from mst_driver where DRIVER_CODE = #{relatedCompyCode})  as phone1,
+			(select PHONE2 from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as phone2,
+			(select CERTIFICATE_FLAG from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as certificateFlag,
+			(select DANGEROUS_FLAG from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as dangerousFlag,
+			(select STORAGE_OIL from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as storageOil,
+			(select QUIT_FLAG from mst_driver where DRIVER_CODE = #{relatedCompyCode}) as quitFlag,
+			DATE_FORMAT((select QUIT_TIME from mst_driver where DRIVER_CODE = #{relatedCompyCode}), '%Y-%m-%d')  as quitTime,
+			DATE_FORMAT((select ENTRY_TIME from mst_driver where DRIVER_CODE = #{relatedCompyCode}), '%Y-%m-%d')  as entryTime,
+			(select email from t_user where id= (SELECT USER_ID FROM mst_driver WHERE DRIVER_CODE = #{relatedCompyCode})) as email
+		FROM
+			MST_RELATED_COMPY MRC
+		WHERE
+			MRC.RELATED_COMPY_CODE = #{relatedCompyCode}
+	</select>
+
+	<select id="selectRelatedCompyType" resultType="java.lang.String">
+		SELECT
+		RELATED_COMPY_TYPE
+		FROM
+		mst_related_compy
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+	</select>
+
+	<select id="checkPsn" resultType="java.lang.String">
+		SELECT
+		RELATED_COMPY_CODE
+		FROM
+		mst_related_compy_psn
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+		AND RELATED_PSN_NAME = #{relatedPsnName}
+	</select>
+
+	<select id="checkPsnPhone" resultType="java.lang.Integer">
+		SELECT
+		count(1)
+		FROM
+		mst_related_compy_psn
+		WHERE 1=2
+		<if test="relatedPsnTel1 != null and relatedPsnTel1 != ''">
+			OR RELATED_PSN_TEL1 = #{relatedPsnTel1} OR RELATED_PSN_TEL2 = #{relatedPsnTel1} OR RELATED_PSN_TEL3 = #{relatedPsnTel1}
+		</if>
+		<if test="relatedPsnTel2 != null and relatedPsnTel2 != ''">
+			OR RELATED_PSN_TEL1 = #{relatedPsnTel2} OR RELATED_PSN_TEL2 = #{relatedPsnTel2} OR RELATED_PSN_TEL3 = #{relatedPsnTel2}
+		</if>
+		<if test="relatedPsnTel3 != null and relatedPsnTel3 != ''">
+			OR RELATED_PSN_TEL1 = #{relatedPsnTel3} OR RELATED_PSN_TEL2 = #{relatedPsnTel3} OR RELATED_PSN_TEL3 = #{relatedPsnTel3}
+		</if>
+	</select>
+
+	<select id="checkSname" resultType="RelateCompanyModel">
+		SELECT
+		COMPY_SNAME,
+		ACTIVE_FLAG
+		FROM
+		mst_related_compy
+		WHERE
+		COMPY_SNAME = #{compySname}
+		AND RELATED_COMPY_CODE != #{relatedCompyCode}
+		group BY COMPY_SNAME
+	</select>
+
+	<insert id="addPsn">
+		INSERT INTO mst_related_compy_psn (
+		RELATED_COMPY_CODE,
+		RELATED_PSN_NAME,
+		RELATED_PSN_POSITION,
+		RELATED_PSN_TEL1,
+		RELATED_PSN_TEL2,
+		RELATED_PSN_TEL3,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{relatedCompyCode}
+		,
+		#{relatedPsnName}
+		,
+		#{relatedPsnPosition}
+		,
+		#{relatedPsnTel1}
+		,
+		#{relatedPsnTel2}
+		,
+		#{relatedPsnTel3}
+		,
+		#{createPsn}
+		,
+		now()
+		)
+	</insert>
+
+	<insert id="updatePsns">
+		UPDATE mst_related_compy_psn
+		SET RELATED_PSN_NAME = #{relatedPsnName}
+		,
+		RELATED_PSN_POSITION = #{relatedPsnPosition}
+		,
+		RELATED_PSN_TEL1 = #{relatedPsnTel1}
+		,
+		RELATED_PSN_TEL2 = #{relatedPsnTel2}
+		,
+		RELATED_PSN_TEL3 = #{relatedPsnTel3}
+		,
+		UPDATE_BY = #{updatePsn}
+		,
+		UPDATE_TIME = now()
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+		AND RELATED_PSN_NAME = #{beforeRelatedPsnName}
+
+	</insert>
+
+	<delete id="deletePsn">
+		DELETE
+		FROM
+		mst_related_compy_psn
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+		AND RELATED_PSN_NAME = #{relatedPsnName}
+	</delete>
+
+	<insert id="addBank" useGeneratedKeys="true" keyProperty="id" parameterType="BankModel">
+		INSERT INTO mst_related_bank_accout (
+		RELATED_COMPY_CODE,
+		RELATED_ACCOUNT_NAME,
+		RELATED_ACCOUNT_NO,
+		RELATED_ACCOUNT_BANK,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{relatedCompyCode},
+		#{relatedAccountName},
+		#{relatedAccountNo},
+		#{relatedAccountBank},
+		#{userId},
+		now()
+		)
+	</insert>
+
+	<update id="updateBank">
+		UPDATE mst_related_bank_accout
+		SET RELATED_ACCOUNT_NAME = #{relatedAccountName}
+		,
+		RELATED_ACCOUNT_NO = #{relatedAccountNo}
+		,
+		RELATED_ACCOUNT_BANK = #{relatedAccountBank}
+		,
+		UPDATE_BY = #{userId}
+		,
+		UPDATE_TIME = NOW()
+		WHERE
+		ID = #{id}
+	</update>
+
+	<delete id="deleteBank">
+		DELETE
+		FROM
+		mst_related_bank_accout
+		WHERE
+		id = #{id}
+	</delete>
+
+	<select id="checkBank" resultType="java.lang.String">
+		SELECT
+		id
+		FROM
+		mst_related_bank_accout
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+		AND RELATED_ACCOUNT_NO = #{relatedAccountNo}
+	</select>
+
+	<select id="selectRelatedCompyPsn" resultType="PsnModel">
+		SELECT
+		RELATED_COMPY_CODE AS relatedCompyCode,
+		RELATED_PSN_NAME AS relatedPsnName,
+		RELATED_PSN_POSITION AS relatedPsnPosition,
+		RELATED_PSN_TEL1 AS relatedPsnTel1,
+		RELATED_PSN_TEL2 AS relatedPsnTel2,
+		RELATED_PSN_TEL3 AS relatedPsnTel3,
+		(
+		SELECT
+		count(1)
+		FROM
+		mst_related_compy_psn
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}) as PsnFlag
+		FROM
+		mst_related_compy_psn
+		WHERE
+		RELATED_COMPY_CODE = #{relatedCompyCode}
+	</select>
+
+	<select id="selectBankData" resultType="BankModel">
+		SELECT
+		mrba.id,
+		RELATED_COMPY_CODE,
+		RELATED_ACCOUNT_NAME ,
+		RELATED_ACCOUNT_NO ,
+		RELATED_ACCOUNT_BANK ,
+		su. NAME AS createPsn
+		FROM
+		mst_related_bank_accout mrba
+		LEFT JOIN t_user su ON su.id = mrba.CREATE_BY
+		WHERE
+		mrba.RELATED_COMPY_CODE = #{relatedCompyCode}
+	</select>
+
+	<update id="updateMstRelatedCompy">
+		UPDATE mst_related_compy
+		SET RELATED_COMPY_TYPE =#{relatedCompyType}
+		, COMPY_SNAME = #{compySname}
+		, COMPY_FNAME = #{compyFname}
+		, UPDATE_BY  = #{updatePsn}
+		, UPDATE_TIME = NOW()
+		,ACTIVE_FLAG =#{activeFlag}
+		WHERE RELATED_COMPY_CODE = #{relatedCompyCode}
+	</update>
+
+	<insert id="addMstRelateCompy">
+		INSERT INTO mst_related_compy (
+		RELATED_COMPY_CODE,
+		RELATED_COMPY_TYPE,
+		COMPY_SNAME,
+		COMPY_FNAME,
+		CREATE_BY,
+		CREATE_TIME,
+		ACTIVE_FLAG
+		)
+		VALUE
+		(
+		#{relatedCompyCode}
+		,#{relatedCompyType}
+		,#{compySname}
+		,#{compyFname}
+		,#{createPsn}
+		,now()
+		,#{activeFlag}
+		)
+	</insert>
+
+	<select id="getRelateCompy" resultType="RelateCompanyModel">
+		SELECT
+		mrc.RELATED_COMPY_CODE AS relatedCompyCode,
+		mrc.RELATED_COMPY_TYPE AS relatedCompyType,
+		mrc.COMPY_SNAME AS compySname,
+		mrc.COMPY_FNAME AS compyFname,
+		mrcp.RELATED_PSN_NAME AS psnName,
+		mrcp.RELATED_PSN_TEL1 AS psnPhone1,
+		mrcp.RELATED_PSN_TEL2 AS psnPhone2,
+		mrcp.RELATED_PSN_TEL3 AS psnPhone3,
+		mrc.ACTIVE_FLAG AS activeFlag
+		FROM
+		mst_related_compy mrc
+		LEFT JOIN mst_related_compy_psn mrcp ON mrcp.RELATED_COMPY_CODE = mrc.RELATED_COMPY_CODE
+		WHERE
+		mrc.RELATED_COMPY_CODE IN
+		<foreach collection="relateCodes" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		ORDER BY mrc.CREATE_TIME DESC
+	</select>
+
+	<insert id="addMstDriver">
+		INSERT INTO mst_driver (
+		DRIVER_CODE,
+		DRIVER_NAME,
+		DRIVER_TYPE,
+		SFZ_NO,
+		DRV_LICENCE_NO,
+		DRV_LICENCE_LEVEL,
+		DRV_LICENCE_YEAR,
+		PHONE1,
+		PHONE2,
+		USER_ID,
+		CERTIFICATE_FLAG,
+		DANGEROUS_FLAG,
+		STORAGE_OIL,
+		QUIT_FLAG,
+		QUIT_TIME,
+		ENTRY_TIME,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{relatedCompyCode}
+		,
+		#{compySname}
+		,
+		#{driverType}
+		,
+		#{sfzNo}
+		,
+		#{drvLicenceNo}
+		,
+		#{drvLicenceLevel}
+		,
+		CASE
+		WHEN #{drvLicenceYear} ='' THEN NULL
+		ELSE
+		#{drvLicenceYear} END
+		,
+		#{phone1}
+		,
+		#{phone2}
+		,
+		(
+		SELECT
+		id
+		FROM
+		t_user
+		WHERE
+		user_code = #{helperCode})
+		,
+		CASE
+		WHEN #{certificateFlag} =''OR #{certificateFlag} ='null' THEN NULL
+		ELSE
+		#{certificateFlag} END
+		,
+		CASE
+		WHEN #{dangerousFlag} ='' OR #{dangerousFlag} ='null' THEN NULL
+		ELSE
+		#{dangerousFlag} END
+		,
+		CASE
+		WHEN #{storageOil} ='' THEN NULL
+		ELSE
+		#{storageOil} END
+		,
+		#{quitFlag}
+		,
+		CASE
+		WHEN #{quitTime} ='' THEN NULL
+		ELSE
+		#{quitTime} END
+		,
+		CASE
+		WHEN #{entryTime} ='' THEN NULL
+		ELSE
+		#{entryTime} END
+		,
+		#{createPsn}
+		,
+		now()
+		)
+	</insert>
+	<insert id="addMstAttachDriver">
+		INSERT INTO mst_attach_driver (
+		DRIVER_CODE,
+		DRIVER_NAME,
+		SFZ_NO,
+		DRV_LICENCE_NO,
+		DRV_LICENCE_LEVEL,
+		DRV_LICENCE_YEAR,
+		PHONE1,
+		PHONE2,
+		USER_ID,
+		CERTIFICATE_FLAG,
+		DANGEROUS_FLAG,
+		STORAGE_OIL,
+		QUIT_FLAG,
+		QUIT_TIME,
+		ENTRY_TIME,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{relatedCompyCode}
+		,
+		#{compySname}
+		,
+		#{sfzNo}
+		,
+		#{drvLicenceNo}
+		,
+		#{drvLicenceLevel}
+		,
+		CASE
+		WHEN #{drvLicenceYear} ='' THEN NULL
+		ELSE
+		#{drvLicenceYear} END
+		,
+		#{phone1}
+		,
+		#{phone2}
+		,
+		(
+		SELECT
+		id
+		FROM
+		t_user
+		WHERE
+		user_code = #{helperCode})
+		,
+		CASE
+		WHEN #{certificateFlag} =''OR #{certificateFlag} ='null' THEN NULL
+		ELSE
+		#{certificateFlag} END
+		,
+		CASE
+		WHEN #{dangerousFlag} ='' OR #{dangerousFlag} ='null' THEN NULL
+		ELSE
+		#{dangerousFlag} END
+		,
+		CASE
+		WHEN #{storageOil} ='' THEN NULL
+		ELSE
+		#{storageOil} END
+		,
+		#{quitFlag}
+		,
+		CASE
+		WHEN #{quitTime} ='' THEN NULL
+		ELSE
+		#{quitTime} END
+		,
+		CASE
+		WHEN #{entryTime} ='' THEN NULL
+		ELSE
+		#{entryTime} END
+		,
+		#{createPsn}
+		,
+		now()
+		)
+	</insert>
+	<select id="repeatJudgeToTuser" resultType="java.lang.String">
+		SELECT
+		user_code
+		FROM
+		t_user
+		WHERE
+		user_code = #{userCode}
+	</select>
+	<update id="updateMstDrive">
+		UPDATE mst_driver
+		SET DRIVER_NAME = #{compySname}
+		,
+		 DRIVER_TYPE = #{driverType}
+		,
+		SFZ_NO = #{sfzNo}
+		,
+		DRV_LICENCE_NO = #{drvLicenceNo}
+		,
+		DRV_LICENCE_LEVEL = #{drvLicenceLevel}
+		,
+		DRV_LICENCE_YEAR = (
+		CASE
+		WHEN #{drvLicenceYear} ='' THEN NULL
+		ELSE
+		#{drvLicenceYear} END)
+		,
+		PHONE1 = #{phone1}
+		,
+		PHONE2 = #{phone2}
+		,
+		CERTIFICATE_FLAG = #{certificateFlag}
+		,
+		DANGEROUS_FLAG = #{dangerousFlag}
+		,
+		STORAGE_OIL = #{storageOil}
+		,
+		QUIT_FLAG = #{quitFlag}
+		,
+		QUIT_TIME = (
+		CASE
+		WHEN #{quitTime} ='' THEN NULL
+		ELSE
+		#{quitTime} END)
+		,
+		ENTRY_TIME = (
+		CASE
+		WHEN #{entryTime} ='' THEN NULL
+		ELSE
+		#{entryTime} END)
+		,
+		UPDATE_BY = #{updatePsn}
+		,
+		UPDATE_TIME = NOW()
+		WHERE
+		DRIVER_CODE = #{relatedCompyCode}
+	</update>
+	<update id="updateMstAttachDriver">
+		UPDATE mst_attach_driver
+		SET DRIVER_NAME = #{compySname}
+		,
+		SFZ_NO = #{sfzNo}
+		,
+		DRV_LICENCE_NO = #{drvLicenceNo}
+		,
+		DRV_LICENCE_LEVEL = #{drvLicenceLevel}
+		,
+		DRV_LICENCE_YEAR = (
+		CASE
+		WHEN #{drvLicenceYear} ='' THEN NULL
+		ELSE
+		#{drvLicenceYear} END)
+		,
+		PHONE1 = #{phone1}
+		,
+		PHONE2 = #{phone2}
+		,
+		CERTIFICATE_FLAG = #{certificateFlag}
+		,
+		DANGEROUS_FLAG = #{dangerousFlag}
+		,
+		STORAGE_OIL = #{storageOil}
+		,
+		QUIT_FLAG = #{quitFlag}
+		,
+		QUIT_TIME = (
+		CASE
+		WHEN #{quitTime} ='' THEN NULL
+		ELSE
+		#{quitTime} END)
+		,
+		ENTRY_TIME = (
+		CASE
+		WHEN #{entryTime} ='' THEN NULL
+		ELSE
+		#{entryTime} END)
+		,
+		UPDATE_BY = #{updatePsn}
+		,
+		UPDATE_TIME = NOW()
+		WHERE
+		DRIVER_CODE = #{relatedCompyCode}
+	</update>
+	<update id="updateTUser">
+		UPDATE t_user
+		SET NAME = #{compySname}
+		,
+		phone_number = #{phone1}
+		,
+		email = #{email}
+		,
+		update_by = #{updatePsn}
+		,
+		update_time = NOW()
+		WHERE
+		id = (
+		SELECT
+		TEMP.id
+		FROM
+		(
+		SELECT
+		tu.id
+		FROM
+		t_user tu
+		WHERE
+		tu.user_code = #{userCode}) TEMP )
+	</update>
+</mapper>

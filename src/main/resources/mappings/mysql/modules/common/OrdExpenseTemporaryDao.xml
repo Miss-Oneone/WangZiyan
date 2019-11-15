@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.OrdExpenseTemporaryDao">
+
+	<select id="get" resultType="OrdExpenseTemporary">
+		SELECT * FROM ord_expense_temporary WHERE id = #{id}
+	</select>
+
+	<select id="listForBatch" resultType="OrdExpenseTemporary">
+		SELECT
+			id
+			,batch_id
+			,type
+			,status
+			,params
+			,create_by
+		FROM ord_expense_temporary
+		WHERE STATUS IN ('0','2')
+		AND COUNT  &lt; 3
+		ORDER BY BATCH_ID
+	</select>
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.yard.dao.YardDao">
+
+    <select id="listHeapPlans" resultType="HeapPlanModel">
+        SELECT
+          a.id
+          ,a.contn_no AS contnNo
+          ,a.status
+          ,DATE_FORMAT(a.plan_date, '%Y-%m-%d') AS planDate
+          ,a.seal_no AS sealNo
+          ,a.report_sts AS reportSts
+          ,c.heap_contn_no AS position
+          ,a.quantity AS quantity
+          ,a.plate_loading AS plateLoading
+          ,a.unloading_date AS unloadingDate
+          ,t.name AS createBy
+          ,DATE_FORMAT(a.create_time, '%Y-%m-%d %H:%i') AS createTime
+          ,IF((SELECT COUNT(1) FROM heap_plan a2 WHERE a2.contn_no = a.contn_no AND a2.plan_date BETWEEN date_sub(a.plan_date, interval 1 day) AND date_add(a.plan_date, interval 1 day) ) > 1, '是', '否') AS hasSameContn
+        FROM heap_plan a
+        LEFT JOIN t_user t ON t.id = a.create_by
+        LEFT JOIN heap_contn c ON c.contn_no = a.contn_no
+        WHERE 1=1
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+        <if test="dateFrom != null and dateFrom != ''">
+            AND a.plan_date &gt;= DATE_FORMAT(#{dateFrom},'%Y-%m-%d 00:00:00')
+        </if>
+        <if test="dateTo != null and dateTo != ''">
+            AND a.plan_date &lt;= DATE_FORMAT(#{dateTo}, '%Y-%m-%d 23:59:59')
+        </if>
+        ORDER BY a.status, a.plan_date ASC
+    </select>
+
+    <select id="listHeapPlanImportHds" resultType="HeapPlanModel">
+        SELECT a.id
+          ,a.batch_no AS batchNo
+          ,a.status
+          ,a.goods_no AS goodsNo
+          ,a.goods_owe_quantity AS goodsOweQuantity
+          ,a.customs_clearance_date AS customsClearanceDate
+          ,t.name AS createBy
+          ,DATE_FORMAT(a.create_time, '%Y-%m-%d %H:%i') AS createTime
+        FROM heap_plan_import_hd a
+        LEFT JOIN t_user t ON t.id = a.create_by
+        <where>
+            <if test="batchNo != null and batchNo != ''">
+                AND a.batch_no LIKE concat('%', #{batchNo},'%')
+            </if>
+            <if test="dateFrom != null and dateFrom != ''">
+                AND a.create_time &gt;= DATE_FORMAT(#{dateFrom},'%Y-%m-%d 00:00:00')
+            </if>
+            <if test="dateTo != null and dateTo != ''">
+                AND a.create_time &lt;= DATE_FORMAT(#{dateTo}, '%Y-%m-%d 23:59:59')
+            </if>
+            <if test="status != null and status != ''">
+                AND a.status = #{status}
+            </if>
+        </where>
+        ORDER BY a.create_time DESC, a.`status` ASC
+    </select>
+
+    <select id="listHeapPlanImportDtls" resultType="HeapPlanModel">
+        SELECT
+          <include refid="condition"></include>
+          ,IF((SELECT COUNT(1) FROM heap_plan_import_dtl a2 WHERE a2.contn_no = a.contn_no AND a2.create_time BETWEEN date_sub(a.create_time, interval 1 day) AND date_add(a.create_time, interval 1 day) ) > 1, '是', '否') AS hasSameContn
+          ,hc.heap_contn_no AS position
+          ,hc.heap_no AS heapNo
+          ,IF(IFNULL(hc.heap_no, '') != '', (SELECT COUNT(1)+1 FROM heap_contn d WHERE d.heap_contn_no &gt; hc.heap_contn_no AND d.contn_no != '' AND d.contn_no IS NOT NULL AND d.heap_no = hc.heap_no), 10000) AS cntNeedMoveContn
+        ,(SELECT GROUP_CONCAT(DISTINCT CONCAT_WS(':',c.heap_contn_no,c.contn_no)) FROM heap_plan hp INNER JOIN heap_contn c ON hp.contn_no = c.contn_no WHERE c.heap_no = hc.heap_no AND hp.`status` = '010' GROUP BY c.heap_no) AS sameHeapContnNos
+        ,(SELECT GROUP_CONCAT(DISTINCT CONCAT_WS(':',c.heap_contn_no,c.contn_no)) FROM heap_plan hp INNER JOIN heap_contn c ON hp.contn_no = c.contn_no WHERE c.heap_no = hc.heap_no AND hp.`status` = '010' AND hp.refer_flag = 'Y' GROUP BY c.heap_no) AS mainSameHeapContnNos
+        FROM heap_plan_import_dtl a
+        LEFT JOIN heap_plan_import_hd b ON  a.heap_plan_import_hd_id = b.id
+        LEFT JOIN t_user t ON t.id = a.create_by
+        LEFT JOIN heap_contn hc ON hc.contn_no = a.contn_no
+        LEFT JOIN heap h ON h.heap_no = hc.heap_no
+        WHERE 1=1
+        AND hc.heap_contn_type != '020'
+        AND h.heap_type != '020'
+        <if test="batchNo != null and batchNo != ''">
+            AND b.batch_no LIKE concat('%', #{batchNo}, '%')
+        </if>
+        ORDER BY cntNeedMoveContn asc
+    </select>
+
+    <select id="listHeapPlanImportDtlsByIds" resultType="HeapPlanModel">
+        SELECT
+        <include refid="condition"></include>
+        FROM heap_plan_import_dtl a
+        LEFT JOIN heap_plan_import_hd b ON  a.heap_plan_import_hd_id = b.id
+        LEFT JOIN t_user t ON t.id = a.create_by
+        WHERE a.id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="totalPlansByStatus" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM heap_plan a WHERE 1=1
+        <if test="status != null and status != ''">
+            AND a.status = #{status}
+        </if>
+        <if test="dateFrom != null and dateFrom != ''">
+            AND a.plan_date &gt;= DATE_FORMAT(#{dateFrom},'%Y-%m-%d 00:00:00')
+        </if>
+        <if test="dateTo != null and dateTo != ''">
+            AND a.plan_date &lt;= DATE_FORMAT(#{dateTo}, '%Y-%m-%d 23:59:59')
+        </if>
+    </select>
+
+    <select id="totalHeapContns" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM heap_contn WHERE contn_no != '' AND contn_no IS NOT NULL
+    </select>
+
+    <select id="listMultBatchHeapPlanImportDtls" resultType="HeapPlanModel">
+        SELECT
+        <include refid="condition"></include>
+        ,IF((SELECT COUNT(1) FROM heap_plan_import_dtl a2 WHERE a2.contn_no = a.contn_no AND a2.create_time BETWEEN date_sub(a.create_time, interval 1 day) AND date_add(a.create_time, interval 1 day) ) > 1, '是', '否') AS hasSameContn
+        ,hc.heap_contn_no AS position
+        ,IF(IFNULL(hc.heap_no, '') != '', (SELECT COUNT(1)+1 FROM heap_contn d WHERE d.heap_contn_no &gt; hc.heap_contn_no AND d.contn_no != '' AND d.contn_no IS NOT NULL AND d.heap_no = hc.heap_no), 10000) AS cntNeedMoveContn
+        ,(SELECT GROUP_CONCAT(DISTINCT CONCAT_WS(':',c.heap_contn_no,c.contn_no)) FROM heap_plan hp INNER JOIN heap_contn c ON hp.contn_no = c.contn_no WHERE c.heap_no = hc.heap_no AND hp.`status` = '010' GROUP BY c.heap_no) AS sameHeapContnNos
+        ,(SELECT GROUP_CONCAT(DISTINCT CONCAT_WS(':',c.heap_contn_no,c.contn_no)) FROM heap_plan hp INNER JOIN heap_contn c ON hp.contn_no = c.contn_no WHERE c.heap_no = hc.heap_no AND hp.`status` = '010' AND hp.refer_flag = 'Y' GROUP BY c.heap_no) AS mainSameHeapContnNos
+        ,hc.heap_no AS heapNo
+        ,b.goods_no AS goodsNo
+        FROM heap_plan_import_dtl a
+        LEFT JOIN heap_plan_import_hd b ON  a.heap_plan_import_hd_id = b.id
+        LEFT JOIN t_user t ON t.id = a.create_by
+        LEFT JOIN heap_contn hc ON hc.contn_no = a.contn_no
+        LEFT JOIN heap h ON h.heap_no = hc.heap_no
+        WHERE hc.heap_contn_type != '020'
+        AND h.heap_type != '020'
+        AND b.batch_no IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY hc.heap_no, b.goods_no, cntNeedMoveContn asc
+    </select>
+
+    <sql id="condition">
+        a.id,
+         a.heap_plan_import_hd_id AS heapPlanImportHdId,
+         a.contn_no AS contnNo,
+         a.seal_no AS sealNo,
+         a.report_sts AS reportSts,
+         a.storage_no AS storageNo,
+         a.quantity AS quantity,
+         a.plate_loading AS plateLoading,
+         a.unloading_date AS unloadingDate,
+         t.name AS createBy,
+         DATE_FORMAT(a.create_time, '%Y-%m-%d %H:%i') AS createTime,
+         b.batch_no AS batchNo,
+         b.goods_no AS goodsNo,
+         b.goods_owe_quantity AS goodsOweQuantity,
+         b.customs_clearance_date AS customsClearanceDate
+    </sql>
+</mapper>

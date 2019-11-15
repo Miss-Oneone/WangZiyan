@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ticketInventryCntCheck" language="groovy" pageWidth="700" pageHeight="1000" orientation="Landscape" columnWidth="660" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isIgnorePagination="true" uuid="31b1523d-b6c0-4c2b-beac-2049d490ba93">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="Crosstab Data Text" hAlign="Center"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\Cqf\\workspace\\hamana\\src\\main\\webapp\\reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="include" class="java.util.Collection"/>
+	<parameter name="SYSDATE_TIME" class="java.lang.String"/>
+	<parameter name="pageControl" class="java.util.Collection"/>
+	<parameter name="addrsList" class="java.util.Collection"/>
+	<parameter name="rPiName" class="java.util.Collection"/>
+	<parameter name="whraf" class="java.util.Collection"/>
+	<parameter name="cusCode" class="java.lang.String"/>
+	<parameter name="custApprovalPsn" class="java.lang.String"/>
+	<parameter name="contractName" class="java.lang.String"/>
+	<parameter name="goodsType" class="java.lang.String"/>
+	<parameter name="priceContractNo" class="java.lang.String"/>
+	<parameter name="applyTime" class="java.lang.String"/>
+	<parameter name="salesPsn" class="java.lang.String"/>
+	<parameter name="effectStartTime" class="java.lang.String"/>
+	<parameter name="effectEndTime" class="java.lang.String"/>
+	<field name="priceContractNo" class="java.lang.String"/>
+	<title>
+		<band height="39">
+			<line>
+				<reportElement uuid="f3fa2651-ae83-4be9-afd7-399b0f4e66a5" x="0" y="0" width="660" height="1"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="5475ce8c-4b02-4e0c-b095-ef0b19aa43c7" x="155" y="0" width="302" height="39"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="20" isBold="true" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[兆冠物流价格协议]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="e58ca337-6a17-4bae-81f0-ae789f329302" x="155" y="38" width="302" height="1"/>
+			</line>
+			<line>
+				<reportElement uuid="30f83cf9-c194-4563-9ff3-e03fbcfabd5b" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="39"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="be2ab2b6-530c-4ee6-b313-18f313eb60bb" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="39"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="143">
+			<line>
+				<reportElement uuid="30419ee8-5392-4339-9d5d-657c464490dc" x="0" y="0" width="1" height="143"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="336ea30f-74d0-443a-b4ba-373e31d8c455" x="660" y="0" width="1" height="143"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement uuid="0e57da2f-e08f-4add-a328-73a915f07877" x="25" y="23" width="73" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[客户名称：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c6e2f4d8-2244-4c81-921a-0e7993d538b3" x="25" y="54" width="73" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[客户确认人：]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement uuid="1794eb26-ef5d-46a6-a6ba-efd8ebe891de" x="421" y="23" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="a8686c35-0c70-4ff7-be48-42caab794164" x="421" y="43" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="a0ae7a4f-4d6a-4e31-bae5-e4143f632096" x="421" y="63" width="100" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="ddec6449-3661-4237-b191-67d29fd61aa9" x="421" y="23" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="1"/>
+				</textElement>
+				<text><![CDATA[协议编号：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="bdb0cbd5-26c4-4ffc-88c0-389af13bae09" x="421" y="43" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="1"/>
+				</textElement>
+				<text><![CDATA[报价时间：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="a387ae11-8907-47e9-b019-3cd747a556ed" x="421" y="63" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="1"/>
+				</textElement>
+				<text><![CDATA[销售人员：]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement uuid="f986d498-1223-40cf-ab47-3df098f1c111" x="521" y="23" width="110" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="82697f1f-4182-4848-946b-d3a3f8a8733f" x="521" y="43" width="110" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="d5d7c5dc-383f-4852-9045-c2d45833b688" x="521" y="63" width="110" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="f9146fc7-8d61-4830-aeb5-da4ec0beeefd" x="25" y="116" width="73" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[货物类型：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="ba6142c0-4bef-4b6f-a37c-66150dc72c83" x="25" y="85" width="73" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[协议名称：]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement uuid="15804d46-fb4d-4ba8-8d8d-6def6a9a3d75" x="421" y="83" width="100" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="885054be-8a5b-4887-8ed9-b0fe99e46f4f" x="421" y="103" width="100" height="20"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="0b63c93d-a0b7-4ffc-a412-3165faaa7c55" x="421" y="83" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="1"/>
+				</textElement>
+				<text><![CDATA[有效时间（开始）：]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="3228d30c-8090-49b9-bbbd-9c30575396e9" x="421" y="103" width="100" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="1"/>
+				</textElement>
+				<text><![CDATA[有效时间（截止）：]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement uuid="5550b1cc-844c-487b-96ae-090f4d426caa" x="521" y="83" width="110" height="20"/>
+			</rectangle>
+			<rectangle>
+				<reportElement uuid="afe3f170-395a-4ee0-b302-c62807d72553" x="521" y="103" width="110" height="20"/>
+			</rectangle>
+			<textField>
+				<reportElement uuid="df24b0ff-2986-408d-b3fd-632b8788aec8" x="99" y="23" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{cusCode}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="b4ec8623-8add-4d66-8cc3-1e8a9d7c974c" x="99" y="54" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{custApprovalPsn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="33f51100-011e-45e5-8b41-def8c1310488" x="99" y="85" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{contractName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="342cf221-15ea-40dc-a810-ce660dc79cb4" x="99" y="116" width="100" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{goodsType}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="6c863bf5-f4ac-4bde-8b46-de207cd93472" x="521" y="23" width="110" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{priceContractNo}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="7ee6f976-27a0-430b-b940-5801a7ddc05a" x="521" y="43" width="110" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{applyTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="1191a908-cc08-4210-a827-09ead07de0bc" x="521" y="63" width="110" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{salesPsn}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="8ee8828c-9eb8-45c5-84a8-30e46d321b0c" x="521" y="83" width="110" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{effectStartTime}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="471ea5e7-99ab-4d27-a113-30a42bc48298" x="521" y="103" width="110" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Middle">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{effectEndTime}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="42">
+			<line>
+				<reportElement uuid="d90cd1ff-696a-424d-a1d3-f47fc7949bfa" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="42"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="82456a43-eb25-46a4-8c2d-233d33652d58" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="42"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<subreport>
+				<reportElement uuid="3c0f896e-619e-4a4d-91cd-fbc7f5a15605" x="10" y="0" width="640" height="42"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{whraf})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "priceContract_subreport_whraf.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="46">
+			<line>
+				<reportElement uuid="472c2b45-0482-4306-8208-7b4eb40bf032" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="bc3da489-9468-42b3-9d66-8ab6b3763f34" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<subreport>
+				<reportElement uuid="994e85ae-fc70-4679-bd5b-7aca91b53789" x="10" y="0" width="640" height="42"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{addrsList})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "priceContract_subreport_addrsList.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="46">
+			<line>
+				<reportElement uuid="ad26c245-01f1-4778-9e80-72445e6e56ab" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="0d44dd99-e33d-4ba7-a305-91c0359add8b" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<subreport>
+				<reportElement uuid="3e17fafb-ce13-47ce-a0b6-787a70344f8c" x="10" y="0" width="640" height="42"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{include})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "priceContract_subreport_include.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="46">
+			<subreport>
+				<reportElement uuid="e74ea1f1-e713-4267-90c2-3b6efb509b4b" x="10" y="0" width="640" height="42"/>
+				<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{rPiName})]]></dataSourceExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "prictContract_subreport_rPiName.jasper"]]></subreportExpression>
+			</subreport>
+			<line>
+				<reportElement uuid="00f2264f-ff7b-416d-ab36-aa74f03fdd30" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="c3001422-46cb-4295-8b81-e5b64c6e6fc9" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="46"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="108" splitType="Stretch">
+			<staticText>
+				<reportElement uuid="7bb2cfb1-b666-4da5-85a5-9e099503e3c0" x="25" y="10" width="73" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11"/>
+				</textElement>
+				<text><![CDATA[报价备注]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement uuid="64fb498e-841a-4378-8822-90890058fce7" x="25" y="29" width="625" height="71"/>
+			</rectangle>
+			<staticText>
+				<reportElement uuid="33eff811-d675-4949-88f2-9efb694b69b8" x="25" y="29" width="625" height="47"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[本报价单仅包含基本运费、固定的封签费与装卸货费用等，不包含其他码头、堆场等行政单位依实收取之代付费用，其他各代付费用依实际票据由我司代付后向贵司据实收取。]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="452c69ed-aec5-4ea1-96e3-66e4c74166dc" x="542" y="76" width="95" height="20"/>
+				<textElement textAlignment="Justified">
+					<font fontName="微软雅黑" size="11" pdfFontName="STSong-Light" pdfEncoding="UniGB-UCS2-H" isPdfEmbedded="true"/>
+				</textElement>
+				<text><![CDATA[兆冠物流有限公司]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="22377949-6094-4bb2-9457-984ce30d9aeb" x="0" y="107" width="660" height="1"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="4643a473-5996-4379-bf79-38e31ef839bf" stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="108"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement uuid="10953544-a9dd-4c8e-9d86-058f770e08c6" stretchType="RelativeToBandHeight" x="660" y="0" width="1" height="108"/>
+				<graphicElement>
+					<pen lineWidth="1.75"/>
+				</graphicElement>
+			</line>
+		</band>
+	</pageFooter>
+</jasperReport>

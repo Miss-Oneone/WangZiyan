@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.costroute.dao.CostRouteManDao">
+
+    <select id="listCostRoutes" resultType="CostRouteModel">
+        SELECT
+            cr.id AS id
+            ,cr.from_province_code AS fromProvinceCode
+            ,cr.from_city_code AS fromCityCode
+            ,cr.from_district_code AS fromDistrictCode
+            ,cr.from_county_code AS fromCountyCode
+            ,cr.to_province_code AS toProvinceCode
+            ,cr.to_city_code AS toCityCode
+            ,cr.to_district_code AS toDistrictCode
+            ,cr.to_county_code AS toCountyCode
+            ,cr.distance_adj_km AS distanceAdjKm
+            ,cr.std_drv_sal_price AS stdDrvSalPrice
+            ,if(cr.valid_flag = 'Y', '有效', '失效') AS validFlag
+            ,remarks AS remarks
+            ,sa1.name AS fromProvinceName
+            ,sa2.name AS fromCityName
+            ,sa3.name AS fromDistrictName
+            ,sa4.name AS fromCountyName
+            ,sa5.name AS toProvinceName
+            ,sa6.name AS toCityName
+            ,sa7.name AS toDistrictName
+            ,sa8.name AS toCountyName
+            ,cr.trailer_belong_type AS trailerBelongType
+        FROM mst_cost_route cr
+        LEFT JOIN mst_std_address sa1 ON sa1.code = cr.from_province_code
+        LEFT JOIN mst_std_address sa2 ON sa2.code = cr.from_city_code
+        LEFT JOIN mst_std_address sa3 ON sa3.code = cr.from_district_code
+        LEFT JOIN mst_std_address sa4 ON sa4.code = cr.from_county_code
+        LEFT JOIN mst_std_address sa5 ON sa5.code = cr.to_province_code
+        LEFT JOIN mst_std_address sa6 ON sa6.code = cr.to_city_code
+        LEFT JOIN mst_std_address sa7 ON sa7.code = cr.to_district_code
+        LEFT JOIN mst_std_address sa8 ON sa8.code = cr.to_county_code
+        WHERE 1=1
+        <if test="fromProvinceCode != null and fromProvinceCode !=''">
+            AND cr.from_province_code = #{fromProvinceCode}
+        </if>
+        <if test="fromCityCode != null and fromCityCode !=''">
+            AND cr.from_city_code = #{fromCityCode}
+        </if>
+        <if test="fromDistrictCode != null and fromDistrictCode !=''">
+            AND cr.from_district_code = #{fromDistrictCode}
+        </if>
+        <if test="fromCountyCode != null and fromCountyCode !=''">
+            AND cr.from_county_code = #{fromCountyCode}
+        </if>
+        <if test="toProvinceCode != null and toProvinceCode !=''">
+            AND cr.to_province_code = #{toProvinceCode}
+        </if>
+        <if test="toCityCode != null and toCityCode !=''">
+            AND cr.to_city_code = #{toCityCode}
+        </if>
+        <if test="toDistrictCode != null and toDistrictCode !=''">
+            AND cr.to_district_code = #{toDistrictCode}
+        </if>
+        <if test="toCountyCode != null and toCountyCode !=''">
+            AND cr.to_county_code = #{toCountyCode}
+        </if>
+        <if test="validFlag != null and validFlag !=''">
+            AND cr.valid_flag = #{validFlag}
+        </if>
+    </select>
+
+    <select id="findById" resultType="CostRouteModel">
+        SELECT
+          id
+          ,from_province_code AS fromProvinceCode
+          ,from_city_code AS fromCityCode
+          ,from_district_code AS fromDistrictCode
+          ,from_county_code AS fromCountyCode
+          ,to_province_code AS toProvinceCode
+          ,to_city_code AS toCityCode
+          ,to_district_code AS toDistrictCode
+          ,to_county_code AS toCountyCode
+          ,distance_adj_km AS distanceAdjKm
+          ,std_drv_sal_price AS stdDrvSalPrice
+          ,valid_flag AS validFlag
+          ,remarks AS remarks
+          ,trailer_belong_type AS trailerBelongType
+        FROM mst_cost_route WHERE id = #{id}
+    </select>
+
+    <select id="countByAdrs" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM mst_cost_route
+        WHERE from_county_code = #{fromCountyCode}
+        AND to_county_code = #{toCountyCode}
+        AND trailer_belong_type = #{trailerBelongType}
+        <if test="id != null and id != ''">
+            AND id != #{id}
+        </if>
+    </select>
+</mapper>

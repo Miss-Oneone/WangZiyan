@@ -1,0 +1,44 @@
+/*-------------------------------表溉-----------------------------------*/
+.firstColumn{
+	width:15%;
+}
+.secondColumn{
+	width:18%;
+}
+.thirdColumn{
+	width:15%;
+}
+.fouthColumn{
+	width:10%;
+}
+.fifthColumn{
+	width:15%;
+}
+.sum{
+	width:5%;
+}
+.sumAmount{
+	width:15%;
+}
+
+/*-------------------------------文本框、可编辑下拉框宽度-----------------------------------*/
+.inputText{
+	width:146px;
+}
+.editableSelect{
+	width:146px;
+}
+
+/*-------------------------------文本位置-----------------------------------*/
+#textLeft{
+	text-align:left;
+}
+#textCenter{
+	text-align:center;
+}
+#textRight{
+	text-align:right;
+}
+
+/*-------------------------------表格边框-----------------------------------*/
+

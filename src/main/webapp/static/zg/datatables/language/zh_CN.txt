@@ -1,0 +1,20 @@
+{
+	"sProcessing": "处理中...",
+	"sLengthMenu": "_MENU_",
+	"sZeroRecords": "未查到相应数据",
+	"sInfo": "  _START_ - _END_&nbsp;&nbsp;共 _TOTAL_ 条   ",
+	"sInfoEmpty": "未查到相应数据",
+	"sInfoFiltered": "(从 _MAX_ 条数据过滤)",
+	"sInfoPostFix": "",
+	"sSearch": "查询",
+	"sUrl": "",
+	"oPaginate": {
+		"sFirst":    "&nbsp;",
+		"sPrevious": "&nbsp;",
+		"sNext":     "&nbsp;",
+		"sLast":     "&nbsp;",
+		"sTurn":     "跳转",
+		"sPageNumErr":   "请输入正确的页码",
+		"sPageNumOut":   "页码超过最大值，请重新输入"
+	}
+}

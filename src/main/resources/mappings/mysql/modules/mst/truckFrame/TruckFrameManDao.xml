@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.truckframe.dao.TruckFrameManDao">
+
+    <select id="listTruckFrames" resultType="TruckFrameModel">
+        SELECT
+          mtf.id AS id
+          ,mtf.frame_card_id AS frameCardId
+          ,mtf.serial_no AS serialNo
+          ,mtf.frame_num AS frameNum
+          ,mtf.plate_num AS plateNum
+          ,mtf.status AS statusCd
+          ,td.label AS status
+          ,tu.name AS createBy
+          ,DATE_FORMAT(mtf.create_time, '%Y-%m-%d %H:%i') AS createTime
+          ,tu2.name AS updateBy
+          ,DATE_FORMAT(mtf.update_time, '%Y-%m-%d %H:%i') AS updateTime
+          ,MFT.type_name AS frameType
+        FROM
+          mst_truck_frame mtf
+        LEFT JOIN t_user tu ON tu.id = mtf.create_by
+        LEFT JOIN t_user tu2 ON tu2.id = mtf.update_by
+        LEFT JOIN t_dict td ON td.value = mtf.status AND td.groupno = 'TRUCK_FRAME_STATUS'
+        LEFT JOIN mst_frame_type MFT ON MFT.ID = mtf.FRAME_TYPE_ID
+        WHERE 1=1
+        <if test="frameCardId != null and frameCardId != ''">
+            AND mtf.frame_card_id LIKE CONCAT('%', #{frameCardId}, '%')
+        </if>
+        <if test="frameNum != null and frameNum != ''">
+            AND mtf.frame_num LIKE CONCAT('%', #{frameNum}, '%')
+        </if>
+    </select>
+
+    <select id="findTruckFrameById" resultType="TruckFrameModel">
+        SELECT
+            MTF.ID AS id
+            ,MTF.FRAME_CARD_ID AS frameCardId
+            ,MTF.SERIAL_NO AS serialNo
+            ,MTF.PLATE_NUM AS plateNum
+            ,MTF.FRAME_NUM AS frameNum
+            ,MTF.STATUS AS status
+            ,MTF.FRAME_TYPE_ID AS frameTypeId
+        FROM
+          MST_TRUCK_FRAME MTF
+        WHERE MTF.ID = #{truckFrameId}
+    </select>
+</mapper>

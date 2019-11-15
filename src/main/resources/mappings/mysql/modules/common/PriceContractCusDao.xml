@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.common.persistence.dao.PriceContractCusDao">
+
+    <select id="get" resultType="PriceContractCus">
+        SELECT * FROM price_contract_cus WHERE price_contract_no = #{priceContractNo}
+    </select>
+
+    <insert id="insertPriceContractCus">
+        INSERT INTO price_contract_cus (
+        PRICE_CONTRACT_NO
+        ,CUS_CODE
+        ,CREATE_BY
+        ,CREATE_TIME
+        ) VALUES (
+        #{priceContractNo}
+        , #{cusCode}
+        , #{createBy}
+        , now()
+        )
+    </insert>
+
+    <update id="updatePriceContractCus">
+        UPDATE  price_contract_cus
+        SET  VALID_FLAG = 'Y'
+        ,UPDATE_BY           =  #{updateBy}
+        ,UPDATE_TIME          =  now()
+        WHERE PRICE_CONTRACT_NO   = #{priceContractNo}
+        AND  CUS_CODE = #{cusCode}
+    </update>
+
+    <update id="deletePriceContractCus">
+        UPDATE  price_contract_cus
+        SET VALID_FLAG = 'N'
+        WHERE PRICE_CONTRACT_NO   = #{priceContractNo}
+        <if test="cusCode != null and cusCode != ''">
+            AND CUS_CODE = #{cusCode}
+        </if>
+    </update>
+</mapper>

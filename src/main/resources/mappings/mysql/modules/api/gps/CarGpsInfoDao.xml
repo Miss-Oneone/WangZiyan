@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.api.gps.dao.CarGpsInfoDao">
+
+    <select id="getCarGpsDailyKmByKey" resultType="CarGpsInfoDetailModel">
+        SELECT ID,
+        PLATE_NUM,
+        MILE_SUM,
+        BEGIN_TIME,
+        END_TIME,
+        DIV_MILE_SUM
+        FROM GPS_DAILY_KM
+        WHERE PLATE_NUM = #{plateNum}
+        AND BEGIN_TIME = #{beginTime}
+        AND END_TIME = #{endTime}
+    </select>
+    <insert id="insertGpsDailyKm" parameterType="CarGpsInfoDetailModel">
+        INSERT INTO GPS_DAILY_KM
+        (PLATE_NUM
+        ,MILE_SUM
+        ,BEGIN_TIME
+        ,END_TIME
+        ,CREATE_BY
+        ,CREATE_TIME
+        )
+        VALUES
+        (#{plateNum}
+        ,#{mileSum}
+        ,#{beginTime}
+        ,#{endTime}
+        ,#{createBy}
+        ,#{createTime}
+        )
+        <selectKey resultType="Long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    <update id="updateGpsDailyKm">
+        UPDATE GPS_DAILY_KM
+        SET MILE_SUM = #{mileSum},
+        IF_GET_LATEST_TIME = #{updateTime}
+        WHERE PLATE_NUM = #{plateNum}
+        AND BEGIN_TIME = #{beginTime}
+        AND END_TIME = #{endTime}
+    </update>
+    <insert id="insertGpsDailyKmResume" parameterType="CarGpsInfoDetailModel">
+        INSERT INTO GPS_DAILY_KM_RESUME
+        (PLATE_NUM
+        ,MILE_SUM
+        ,BEGIN_TIME
+        ,END_TIME
+        ,DIFFERENCE_MILE_SUM
+        ,CREATE_BY
+        ,CREATE_TIME
+        )
+        VALUES
+        (#{plateNum}
+        ,#{mileSum}
+        ,#{beginTime}
+        ,#{endTime}
+        ,#{differenceMileSum}
+        ,#{createBy}
+        ,#{createTime}
+        )
+        <selectKey resultType="Long" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+    <update id="updateTSysParameter">
+        UPDATE t_sys_parameter
+        SET `value` = 'N',
+        update_time = NOW()
+        WHERE
+        `value` = 'Y'
+        AND update_time = #{updateTime}
+        AND `key` = 'GPS_JOB'
+    </update>
+    <update id="updateTSysP">
+        UPDATE t_sys_parameter
+        SET `value` = 'Y',
+        update_time = NOW()
+        WHERE
+        `key` = 'GPS_JOB'
+    </update>
+
+    <select id="findMstTrailers" resultType="MstTrailerModel">
+        SELECT PLATE_NUM, GPS_PLATE_NUM
+        FROM MST_TRAILER
+        WHERE 1=1
+        AND GET_GPS_FLAG = 'Y'
+        ORDER BY PLATE_NUM
+    </select>
+
+    <select id="findGpsPlateNumByPlateNum" resultType="String">
+        SELECT MT.GPS_PLATE_NUM
+        FROM MST_TRAILER MT
+        WHERE MT.VALID_FLAG = 'Y'
+        AND PLATE_NUM = #{plateNum}
+        UNION ALL
+        (SELECT MAT.GPS_PLATE_NUM
+        FROM MST_ATTACH_TRAILER MAT
+        WHERE MAT.ACTIVE_FLAG = 'Y'
+        AND PLATE_NUM = #{plateNum})
+        LIMIT 0,1
+    </select>
+
+    <select id="findGpsPlateNumList" resultType="String">
+        SELECT MT.GPS_PLATE_NUM
+        FROM MST_TRAILER MT
+        WHERE MT.VALID_FLAG = 'Y'
+    </select>
+
+    <select id="getCarGpsCanvas" resultType="DzkaGpsCanvarModel">
+        SELECT  PLATE_NUM
+        ,LNG
+        ,LAT
+        ,HEIGHT
+        ,SPEED
+        ,DIRECTIOM
+        ,REPORT_TIME
+        ,DL_TIME
+        FROM GPS_TRAILER_TRACK
+        WHERE 1=1
+        AND PLATE_NUM = #{carPlateNum}
+        AND REPORT_TIME BETWEEN #{beginTime} AND #{endTime}
+    </select>
+
+    <insert id="addGpsDailyReasonHis" >
+        INSERT INTO  gps_daily_reason_his
+        (  DATE
+        ,  PLATE_NUM
+        ,  REASON
+        ,  CREATE_BY
+        ,  CREATE_TIME
+        )
+        VALUES
+        (  #{date}
+        ,  #{plateNum}
+        ,  #{reason}
+        ,  '1'
+        ,  now()
+        )
+    </insert>
+</mapper>

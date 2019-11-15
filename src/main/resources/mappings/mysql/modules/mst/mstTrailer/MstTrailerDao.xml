@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.selfTrailer.dao.SelfTrailerDao">
+    <!-- 主查询-->
+    <select id="findMstTrailerList" resultType="SelfTrailerModel">
+        SELECT
+        t.PLATE_NUM plateNum,
+        t.GPS_PLATE_NUM gpsPlateNum,
+        d1.COMPY_SNAME currentDrvCodeName,
+        d1.RELATED_COMPY_CODE currentDrvCode,
+        t.PRODUCTION_YEAR productionYear,
+        d2.LABEL tWheelTypeLabel,
+        d2.VALUE tWheelType,
+        t.AGE age,
+        t.IDENTITY_NO identityNo,
+        t.CURRENT_CF_NUM currentCfNum,
+<!--         t.CUR_STOP_CODE curStopCode,-->
+<!--         t.CUR_STOP_FADDRS curStopFaddrs,-->
+        t.TANK_LITERS tankLiters,
+<!--         t.EQM_GROUP_CODE eqmGroupCode,-->
+        d3.LABEL trailerTypeLabel,
+        d3.VALUE trailerType,
+        t.MAX_LOAD maxLoad,
+        d4.LABEL fuelTypeLabel,
+        d4.VALUE fuelType,
+        t.COMPY compy,
+        d5.LABEL validFlagLabel,
+        d5.VALUE validFlag,
+        DATE_FORMAT(t.SCRAP_TIME, '%Y-%m-%d') scrapTime,
+        DATE_FORMAT(t.BUY_TIME, '%Y-%m-%d') buyTime,
+        t.PRODUCT_MODEL productModel,
+        t.ENGINE_NO engineNo,
+<!--       DATE_FORMAT(-->
+<!--         t.YEAR_INSPECT_DATE,-->
+<!--         '%Y-%m-%d'-->
+<!--         ) yearInspectDate,-->
+<!--         DATE_FORMAT(-->
+<!--         t.QUARTERLY_INSPECT_DATE,-->
+<!--         '%Y-%m-%d'-->
+<!--         ) quarterlyInspectDate,-->
+<!--         DATE_FORMAT(-->
+<!--         t.BUSINESS_INSPECT_DATE,-->
+<!--         '%Y-%m-%d'-->
+<!--         ) businessInspectDate,-->
+<!--         DATE_FORMAT(-->
+<!--         t.INSURANCE_END_DATE,-->
+<!--         '%Y-%m-%d'-->
+<!--         ) insuranceEndDate,-->
+<!--         DATE_FORMAT(-->
+<!--         t.LUQIAO_FEE_END_DATE,-->
+<!--         '%Y-%m-%d'-->
+<!--         ) luqiaoFeeEndDate,-->
+<!--         d6.LABEL zhangzhouFlagLabel,-->
+<!--         d6.VALUE zhangzhouFlag,-->
+        t.REMARKS remarks,
+<!--         d7.LABEL controlGroupLabel,-->
+<!--         d7.VALUE controlGroup,-->
+        tu.name createPsn,
+        DATE_FORMAT(t.CREATE_TIME, '%Y-%m-%d') createT,
+        tu2.name AS updatePsn,
+        DATE_FORMAT(t.UPDATE_TIME, '%Y-%m-%d') updateT
+        ,t.address AS address
+        ,t.TRAILER_BELONG_TYPE AS trailerBelongTypeCd
+        ,d7.label AS trailerBelongType
+        ,t.ATTACH_DRV_CODE AS attachDrvCode
+        ,d6.COMPY_SNAME AS attachDrvName
+        ,t.LITERS AS liters
+        FROM
+        MST_TRAILER t
+        LEFT JOIN MST_RELATED_COMPY d1 ON t.CURRENT_DRV_CODE = d1.RELATED_COMPY_CODE
+        LEFT JOIN t_dict d2 ON t.T_WHEEL_TYPE = d2.VALUE AND d2.GROUPNO = 'CAR'
+        LEFT JOIN t_dict d3 ON t.TRAILER_TYPE = d3.VALUE AND d3.GROUPNO = 'TRAILER_TYPE'
+        LEFT JOIN t_dict d4 ON t.FUEL_TYPE = d4.VALUE AND d4.GROUPNO = 'OIL_TYPE'
+        LEFT JOIN t_dict d5 ON t.VALID_FLAG = d5.VALUE AND d5.GROUPNO = 'SYS_CONFIRM_FLAG'
+        LEFT JOIN mst_related_compy d6 ON d6.related_compy_code =t.attach_drv_code
+        LEFT JOIN t_dict d7 ON d7.value = t.trailer_belong_type AND d7.groupno = 'TRAILER_BELONG_TYPE'
+        LEFT JOIN t_user tu ON tu.id = t.create_by
+        LEFT JOIN t_user tu2 ON tu2.id = t.UPDATE_BY
+        <!--         LEFT JOIN t_dict d6 ON t.ZHANGZHOU_FLAG = d6.VALUE AND d6.GROUPNO = 'SYS_CONFIRM_FLAG'-->
+<!--         LEFT JOIN t_dict d7 ON t.CONTROL_GROUP = d7.VALUE AND d7.GROUPNO = 'CONTROL_GROUP'-->
+        WHERE
+        1 = 1
+        <if test="validFlag != null and validFlag != ''">
+            AND t.VALID_FLAG = #{validFlag}
+        </if>
+        <if test="plateNum != null and plateNum != ''">
+            AND t.PLATE_NUM like CONCAT('%',#{plateNum},'%')
+        </if>
+        <if test="tWheelType != null and tWheelType != ''">
+            AND t.T_WHEEL_TYPE = #{tWheelType}
+        </if>
+        <if test="identityNo != null and identityNo != ''">
+            AND t.IDENTITY_NO like CONCAT('%',#{identityNo},'%')
+        </if>
+        <if test="currentCfNum != null and currentCfNum != ''">
+            AND t.CURRENT_CF_NUM like CONCAT('%',#{currentCfNum},'%')
+        </if>
+        <if test="trailerBelongType != null and trailerBelongType != ''">
+            AND t.trailer_belong_type = #{trailerBelongType}
+        </if>
+    </select>
+    <delete id="deleteSelfTrailer">
+       DELETE
+        FROM
+            MST_TRAILER
+        WHERE
+            PLATE_NUM IN (${plateNums})
+    </delete>
+    <select id="findMstTrailerByPlateNum" resultType="SelfTrailerModel">
+        SELECT
+        t.PLATE_NUM plateNum,
+        t.GPS_PLATE_NUM gpsPlateNum,
+        d1.COMPY_SNAME currentDrvCodeName,
+        d1.RELATED_COMPY_CODE currentDrvCode,
+        t.PRODUCTION_YEAR productionYear,
+        d2.LABEL tWheelTypeLabel,
+        d2.VALUE tWheelType,
+        t.AGE age,
+        t.IDENTITY_NO identityNo,
+        t.CURRENT_CF_NUM currentCfNum,
+<!--         t.CUR_STOP_CODE curStopCode,-->
+<!--         t.CUR_STOP_FADDRS curStopFaddrs,-->
+        t.TANK_LITERS tankLiters,
+<!--         t.EQM_GROUP_CODE eqmGroupCode,-->
+        d3.LABEL trailerTypeLabel,
+        d3.VALUE trailerType,
+        t.MAX_LOAD maxLoad,
+        d4.LABEL fuelTypeLabel,
+        d4.VALUE fuelType,
+        t.COMPY compy,
+        d5.LABEL validFlagLabel,
+        d5.VALUE validFlag,
+        DATE_FORMAT(t.SCRAP_TIME, '%Y-%m-%d') scrapTime,
+        DATE_FORMAT(t.BUY_TIME, '%Y-%m-%d') buyTime,
+        t.PRODUCT_MODEL productModel,
+        t.ENGINE_NO engineNo,
+<!--        DATE_FORMAT(-->
+<!--        t.YEAR_INSPECT_DATE,-->
+<!--        '%Y-%m-%d'-->
+<!--        ) yearInspectDate,-->
+<!--        DATE_FORMAT(-->
+<!--        t.QUARTERLY_INSPECT_DATE,-->
+<!--        '%Y-%m-%d'-->
+<!--        ) quarterlyInspectDate,-->
+<!--        DATE_FORMAT(-->
+<!--        t.BUSINESS_INSPECT_DATE,-->
+<!--        '%Y-%m-%d'-->
+<!--        ) businessInspectDate,-->
+<!--        DATE_FORMAT(-->
+<!--        t.INSURANCE_END_DATE,-->
+<!--        '%Y-%m-%d'-->
+<!--        ) insuranceEndDate,-->
+<!--        DATE_FORMAT(-->
+<!--        t.LUQIAO_FEE_END_DATE,-->
+<!--        '%Y-%m-%d'-->
+<!--        ) luqiaoFeeEndDate,-->
+<!--        d6.LABEL zhangzhouFlagLabel,-->
+<!--        d6.VALUE zhangzhouFlag,-->
+        t.REMARKS remarks,
+<!--         d7.LABEL controlGroupLabel,-->
+<!--         d7.VALUE controlGroup,-->
+        t.CREATE_BY createPsn,
+        DATE_FORMAT(t.CREATE_TIME, '%Y-%m-%d %H:%i') createT,
+        t.UPDATE_BY updatePsn,
+        DATE_FORMAT(t.UPDATE_TIME, '%Y-%m-%d %H:%i') updateT
+        ,t.address AS address
+        ,t.TRAILER_BELONG_TYPE AS trailerBelongType
+        ,d7.label AS trailerBelongType
+        ,t.ATTACH_DRV_CODE AS attachDrvCode
+        ,d6.COMPY_SNAME AS attachDrvName
+        ,t.OUTER_DRV_CODE AS outerDrvCode
+        ,d8.COMPY_SNAME AS outerDrvName
+        ,if(ifnull(t.ATTACH_DRV_CODE, '') != '', t.ATTACH_DRV_CODE, t.OUTER_DRV_CODE) AS relatedDrvCode
+        ,t.LITERS AS liters
+        FROM
+        MST_TRAILER t
+        LEFT JOIN MST_RELATED_COMPY d1 ON t.CURRENT_DRV_CODE = d1.RELATED_COMPY_CODE
+        LEFT JOIN t_dict d2 ON t.T_WHEEL_TYPE = d2.VALUE AND d2.GROUPNO = 'CAR'
+        LEFT JOIN t_dict d3 ON t.TRAILER_TYPE = d3.VALUE AND d3.GROUPNO = 'TRAILER_TYPE'
+        LEFT JOIN t_dict d4 ON t.FUEL_TYPE = d4.VALUE AND d4.GROUPNO = 'OIL_TYPE'
+        LEFT JOIN t_dict d5 ON t.VALID_FLAG = d5.VALUE AND d5.GROUPNO = 'SYS_CONFIRM_FLAG'
+        LEFT JOIN mst_related_compy d6 ON d6.related_compy_code =t.attach_drv_code
+        LEFT JOIN t_dict d7 ON d7.value = t.trailer_belong_type AND d7.groupno = 'TRAILER_BELONG_TYPE'
+        LEFT JOIN mst_related_compy d8 ON d8.related_compy_code =t.outer_drv_code
+<!--         LEFT JOIN t_dict d6 ON t.ZHANGZHOU_FLAG = d6.VALUE AND d6.GROUPNO = 'SYS_CONFIRM_FLAG'-->
+<!--         LEFT JOIN t_dict d7 ON t.CONTROL_GROUP = d7.VALUE AND d7.GROUPNO = 'CONTROL_GROUP'-->
+        WHERE
+        1 = 1
+            AND t.PLATE_NUM = #{plateNum}
+    </select>
+    <update id="updateSelfTrailer">
+        UPDATE mst_trailer
+            SET
+                GPS_PLATE_NUM = #{gpsPlateNum},
+                T_WHEEL_TYPE = #{tWheelType},
+        <if test="productionYear != null and productionYear != ''">
+                PRODUCTION_YEAR = #{productionYear},
+        </if>
+        <if test="age != null and age != ''">
+                AGE = #{age},
+        </if>
+                IDENTITY_NO = #{identityNo},
+                CURRENT_DRV_CODE = #{currentDrvCode},
+                CURRENT_CF_NUM = #{currentCfNum},
+<!--                 CUR_STOP_CODE = #{curStopCode},-->
+<!--                 CUR_STOP_FADDRS = #{curStopFaddrs},-->
+        <if test="tankLiters != null and tankLiters != ''">
+                TANK_LITERS = #{tankLiters},
+        </if>
+<!--                 EQM_GROUP_CODE = #{eqmGroupCode},-->
+        <if test="maxLoad != null and maxLoad != ''">
+                MAX_LOAD = #{maxLoad},
+        </if>
+                TRAILER_TYPE = #{trailerType},
+                FUEL_TYPE = #{fuelType},
+                COMPY = #{compy},
+                UPDATE_BY = #{updatePsn},
+                UPDATE_TIME = now(),
+                VALID_FLAG = #{validFlag},
+        <if test="scrapTime != null and scrapTime != ''">
+                SCRAP_TIME = #{scrapTime},
+        </if>
+        <if test="buyTime != null and buyTime != ''">
+                BUY_TIME = #{buyTime},
+        </if>
+                PRODUCT_MODEL = #{productModel},
+                ENGINE_NO = #{engineNo},
+        <!--<if test="yearInspectDate != null and yearInspectDate != ''">-->
+                <!--YEAR_INSPECT_DATE = #{yearInspectDate},-->
+        <!--</if>-->
+        <!--<if test="quarterlyInspectDate != null and quarterlyInspectDate != ''">-->
+                <!--QUARTERLY_INSPECT_DATE = #{quarterlyInspectDate},-->
+        <!--</if>-->
+        <!--<if test="businessInspectDate != null and businessInspectDate != ''">-->
+                <!--BUSINESS_INSPECT_DATE = #{businessInspectDate},-->
+        <!--</if>-->
+        <!--<if test="insuranceEndDate != null and insuranceEndDate != ''">-->
+                <!--INSURANCE_END_DATE = #{insuranceEndDate},-->
+        <!--</if>-->
+        <!--<if test="luqiaoFeeEndDate != null and luqiaoFeeEndDate != ''">-->
+                <!--LUQIAO_FEE_END_DATE = #{luqiaoFeeEndDate},-->
+        <!--</if>-->
+                REMARKS = #{remarks}
+<!--                 ZHANGZHOU_FLAG = #{zhangzhouFlag},-->
+<!--                 CONTROL_GROUP = #{controlGroup}-->
+                ,address = #{address}
+                ,TRAILER_BELONG_TYPE = #{trailerBelongType}
+                ,ATTACH_DRV_CODE = #{attachDrvCode}
+                ,OUTER_DRV_CODE = #{outerDrvCode}
+        <if test="liters != null and liters !=''">
+                ,LITERS = #{liters}
+        </if>
+            WHERE
+                1 = 1
+                    AND PLATE_NUM = #{plateNum}
+    </update>
+    <insert id="insertSelfTrailer">
+        insert into mst_trailer
+            (
+                PLATE_NUM,
+                GPS_PLATE_NUM,
+                T_WHEEL_TYPE,
+        <if test="productionYear != null and productionYear != ''">
+                PRODUCTION_YEAR,
+        </if>
+        <if test="age != null and age != ''">
+                AGE,
+        </if>
+                IDENTITY_NO,
+                CURRENT_DRV_CODE,
+                CURRENT_CF_NUM,
+<!--                 CUR_STOP_CODE,-->
+<!--                 CUR_STOP_FADDRS,-->
+        <if test="tankLiters != null and tankLiters != ''">
+                TANK_LITERS,
+        </if>
+<!--                 EQM_GROUP_CODE,-->
+        <if test="maxLoad != null and maxLoad != ''">
+                MAX_LOAD,
+        </if>
+                TRAILER_TYPE,
+                FUEL_TYPE,
+                COMPY,
+                CREATE_BY,
+                CREATE_TIME,
+                VALID_FLAG,
+        <if test="scrapTime != null and scrapTime != ''">
+                SCRAP_TIME,
+        </if>
+        <if test="buyTime != null and buyTime != ''">
+                BUY_TIME,
+        </if>
+                PRODUCT_MODEL,
+                ENGINE_NO,
+        <!--<if test="yearInspectDate != null and yearInspectDate != ''">-->
+                <!--YEAR_INSPECT_DATE,-->
+        <!--</if>-->
+        <!--<if test="quarterlyInspectDate != null and quarterlyInspectDate != ''">-->
+                <!--QUARTERLY_INSPECT_DATE,-->
+        <!--</if>-->
+        <!--<if test="businessInspectDate != null and businessInspectDate != ''">-->
+                <!--BUSINESS_INSPECT_DATE,-->
+        <!--</if>-->
+        <!--<if test="insuranceEndDate != null and insuranceEndDate != ''">-->
+                <!--INSURANCE_END_DATE,-->
+        <!--</if>-->
+        <!--<if test="luqiaoFeeEndDate != null and luqiaoFeeEndDate != ''">-->
+                <!--LUQIAO_FEE_END_DATE,-->
+        <!--</if>-->
+                REMARKS
+<!--                ZHANGZHOU_FLAG,-->
+<!--                CONTROL_GROUP-->
+              ,address
+              ,TRAILER_BELONG_TYPE
+              ,ATTACH_DRV_CODE
+              ,OUTER_DRV_CODE
+        <if test="liters != null and liters !=''">
+            ,LITERS
+        </if>
+            )
+                VALUES
+            (
+                #{plateNum},
+                #{gpsPlateNum},
+                #{tWheelType},
+        <if test="productionYear != null and productionYear != ''">
+                #{productionYear},
+        </if>
+        <if test="age != null and age != ''">
+                #{age},
+        </if>
+                #{identityNo},
+                #{currentDrvCode},
+                #{currentCfNum},
+<!--                #{curStopCode},-->
+<!--                #{curStopFaddrs},-->
+        <if test="tankLiters != null and tankLiters != ''">
+                #{tankLiters},
+        </if>
+<!--                 #{eqmGroupCode},-->
+        <if test="maxLoad != null and maxLoad != ''">
+                #{maxLoad},
+        </if>
+                #{trailerType},
+                #{fuelType},
+                #{compy},
+                #{createPsn},
+                now(),
+                #{validFlag},
+        <if test="scrapTime != null and scrapTime != ''">
+                #{scrapTime},
+        </if>
+        <if test="buyTime != null and buyTime != ''">
+                #{buyTime},
+        </if>
+                #{productModel},
+                #{engineNo},
+        <!--<if test="yearInspectDate != null and yearInspectDate != ''">-->
+                <!--#{yearInspectDate},-->
+        <!--</if>-->
+        <!--<if test="quarterlyInspectDate != null and quarterlyInspectDate != ''">-->
+                <!--#{quarterlyInspectDate},-->
+        <!--</if>-->
+        <!--<if test="businessInspectDate != null and businessInspectDate != ''">-->
+                <!--#{businessInspectDate},-->
+        <!--</if>-->
+        <!--<if test="insuranceEndDate != null and insuranceEndDate != ''">-->
+                <!--#{insuranceEndDate},-->
+        <!--</if>-->
+        <!--<if test="luqiaoFeeEndDate != null and luqiaoFeeEndDate != ''">-->
+                <!--#{luqiaoFeeEndDate},-->
+        <!--</if>-->
+                #{remarks}
+<!--                 #{zhangzhouFlag},-->
+<!--                 #{controlGroup}-->
+              ,#{address}
+              ,#{trailerBelongType}
+              ,#{attachDrvCode}
+              ,#{outerDrvCode}
+        <if test="liters != null and liters !=''">
+              ,#{liters}
+        </if>
+            )
+    </insert>
+
+    <update id="unBindTrailerByDrvCode">
+        UPDATE mst_trailer
+        SET current_drv_code = ''
+          ,update_by = #{userId}
+          ,update_time = now()
+        WHERE current_drv_code = #{driverCode}
+    </update>
+</mapper>

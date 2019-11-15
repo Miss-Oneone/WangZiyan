@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.oilMassAdjust.dao.OilMassAdjustDao">
+	<select id="getOilMassAdjustModels" resultType="OilMassAdjustModel">
+		SELECT
+		oma.id AS id
+		,oma.DRIVER_CODE AS driverCode
+		,md.DRIVER_NAME AS driverName
+		,oma.PLATE_NUM AS plateNum
+		,ROUND(oma.OIL_MASS,2) AS oilMass
+		,DATE_FORMAT(oma.TIME,'%Y-%m-%d') AS time
+		,oma.REMARK AS remark
+		FROM
+		mst_oil_mass_adjust oma
+		LEFT JOIN mst_driver md ON md.DRIVER_CODE = oma.DRIVER_CODE
+		WHERE 1=1
+		<if test="driverCode != null and driverCode != '' ">
+			AND oma.DRIVER_CODE = #{driverCode}
+		</if>
+		<if test="timeFrom != null and timeFrom != '' ">
+			AND DATE_FORMAT(oma.TIME,'%Y-%m-%d') &gt;= #{timeFrom}
+		</if>
+		<if test="timeTo != null and timeTo != '' ">
+			AND DATE_FORMAT(oma.TIME,'%Y-%m-%d') &lt;= #{timeTo}
+		</if>
+		<if test="id != null and id != '' ">
+			AND id = #{id}
+		</if>
+	</select>
+	<insert id="addOilMassModel">
+		INSERT INTO mst_oil_mass_adjust
+            (
+		            DRIVER_CODE
+		    ,       PLATE_NUM
+		    ,       OIL_MASS
+		    ,       TIME
+		    ,       REMARK
+		    ,		CREATE_BY
+		    ,		CREATE_TIME
+		    )
+		VALUES
+		    (
+		            #{driverCode}
+		    ,       #{plateNum}
+		    ,       #{oilMass}
+		    ,       #{time}
+		    ,       #{remark}
+		    ,		#{createBy}
+		    ,		now()
+		    ) ;
+	</insert>
+	<update id="updateOilMassModel">
+		update 	mst_oil_mass_adjust
+		set
+			DRIVER_CODE = #{driverCode}
+			, PLATE_NUM = #{plateNum}
+			, OIL_MASS = #{oilMass}
+			, TIME = #{time}
+			, REMARK = #{remark}
+			, UPDATE_BY   = #{updateBy}
+			, UPDATE_TIME  = now()
+		where
+			ID = #{id}
+	</update>
+</mapper>

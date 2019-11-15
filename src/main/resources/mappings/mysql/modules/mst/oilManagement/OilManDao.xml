@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.oilManagement.dao.OilManDao">
+
+	<select id="listFuelFillings" resultType="OilBalanceModel">
+		SELECT
+			a.PLATE_NUM AS plateNum
+			,DATE_FORMAT(a.OPERATION_TIME, '%Y-%m-%d %H:%i') AS operationTime
+			,DATE_FORMAT(a.OPERATION_TIME, '%Y-%m-%d') AS gpsBeginDate
+			,b.COMPY_SNAME AS driverName
+			,SUM(a.ADD_LITERS) AS addLiters
+		FROM `fuel_filling` a
+		LEFT JOIN mst_related_compy b ON b.related_compy_code = a.driver_code
+		WHERE 1=1
+		<if test="dateFrom != null and dateFrom !=''">
+			AND a.OPERATION_TIME &gt;= #{dateFrom}
+		</if>
+		<if test="dateTo != null and dateTo !=''">
+			AND a.OPERATION_TIME &lt; date_add(str_to_date(#{dateTo},'%Y-%m-%d'), INTERVAL 1 day)
+		</if>
+		<if test="plateNum != null and plateNum !=''">
+			AND a.PLATE_NUM = #{plateNum}
+		</if>
+		<if test="driverCode != null and driverCode != ''">
+			AND a.DRIVER_CODE = #{driverCode}
+		</if>
+		GROUP BY plateNum, gpsBeginDate
+		ORDER BY a.PLATE_NUM, a.OPERATION_TIME DESC
+	</select>
+
+	<select id="listFuelFillingBalanceGps" resultType="OilBalanceModel">
+		<foreach collection="list" item="item" index="index">
+			<if test="index != 0">
+				UNION ALL
+			</if>
+				SELECT
+				#{item.plateNum} AS plateNum
+				,#{item.operationTime} AS operationTime
+				,#{item.driverName} AS driverName
+				,#{item.addLiters} AS addLiters
+				,#{item.gpsBeginDate} AS gpsBeginDate
+				,#{item.gpsEndDate} AS gpsEndDate
+				,ifnull((SELECT sum(mile_sum) FROM gps_daily_km WHERE plate_num = #{item.plateNum} AND begin_time &gt;= #{item.gpsBeginDate} AND begin_time &lt; #{item.gpsEndDate}), '0.00') AS gpsSumKm
+		</foreach>
+	</select>
+
+	<select id="listDrivers" resultType="SelectModel">
+		SELECT driver_code AS `value`
+		 	,driver_name AS text
+		FROM mst_driver WHERE QUIT_FLAG = 'N'
+	</select>
+
+	<select id="listTrailers" resultType="SelectModel">
+		SELECT plate_num AS `value`
+			,plate_num AS text
+	 	FROM mst_trailer WHERE VALID_FLAG = 'Y' AND TRAILER_BELONG_TYPE != '2'
+	</select>
+</mapper>

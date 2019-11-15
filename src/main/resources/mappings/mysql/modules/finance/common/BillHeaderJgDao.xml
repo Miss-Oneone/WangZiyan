@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.finance.common.persistence.dao.BillHeaderJgDao">
+    <select id="findExcelText" resultType="BillExportDataJgModel">
+		select sd.label as excelTextCode,
+			   sd.value as excelTextvalue
+		from t_dict sd 
+		where sd.groupno='finance_Excel_Text'
+		order by sd.order_index
+	</select>
+    <!-- 对账导出查询-->
+    <select id="findFeeAccountList" resultType="BillExportDataJgModel">
+        SELECT T.* FROM
+        (
+        SELECT TD.LABEL AS DIRECT_FLAG
+        ,MRC.COMPY_SNAME AS COMPY_SNAME
+        ,F.ORDER_NO AS ORDER_NO
+        ,DATE_FORMAT(IFNULL(OH.BUSINESS_DATE,F.FEE_DATE),'%Y-%m-%d') AS OCCUR_DATE
+        ,IFNULL(OH.BUSINESS_NO1,'') AS BL_NO
+        ,IFNULL(OH.BUSINESS_NO2,'') AS CONTN_NO
+        ,OH.CONTAINER_TYPE AS CONTAINER_TYPE
+        ,IFNULL(OH.REMARKS,'') AS COMMENTS
+        ,CONCAT(F.PAYMENT_TYPE, F.PI_CODE) AS PI_CODE
+        ,F.PI_NAME AS PI_NAME
+        <if test="idStr != null and idStr != ''">
+            ,BH.BILL_NO AS BILL_NO
+            ,BD.BILL_AMOUNT
+        </if>
+        AS AMOUNT
+        ,F.PAYMENT_TYPE AS PR_TYPE
+        FROM ORD_RECEIPTS_PAYMENTS F
+        <if test="idStr != null and idStr != ''">
+            INNER JOIN BILL_DETAIL BD ON BD.RELATED_ID = F.ID
+            INNER JOIN BILL_HEADER BH ON BH.ID = BD.BILL_ID
+        </if>
+        LEFT JOIN MST_PRICE_ITEM MPI ON MPI.PI_CODE = F.PI_CODE
+        LEFT JOIN MST_RELATED_COMPY MRC ON MRC.RELATED_COMPY_CODE = F.COMPY_CODE
+        LEFT JOIN ORD_HEADER OH ON OH.ORDER_NO = F.ORDER_NO
+        LEFT JOIN T_DICT TD ON TD.GROUPNO = 'FEE_TYPE' AND F.FEE_TYPE = TD.VALUE
+        WHERE (F.AMOUNT &gt; 0 OR F.AMOUNT &lt; 0)
+        <if test="idStr != null and idStr != ''">
+            AND BH.ID IN (${idStr})
+        </if>
+        ) T
+        ORDER BY
+        T.OCCUR_DATE
+        ,T.ORDER_NO
+        ,T.COMPY_SNAME
+    </select>
+</mapper>

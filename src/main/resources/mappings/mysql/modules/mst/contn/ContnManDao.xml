@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.contn.dao.ContnManDao">
+
+    <select id="listContns" resultType="ContnModel">
+        SELECT
+          mc.id AS id
+          ,mc.contn_no AS contnNo
+          ,td.label AS contnType
+          ,mc.SPECIAL_CONTN_TYPE AS specialContnType
+          ,td3.label AS specialContnTypeName
+          ,mco.CONTN_OWNER_NAME  AS contnOwner
+          ,mc.contn_onwer_id AS contnOwnerId
+          ,td2.label AS activeFlag
+          ,mc.REMARKS AS remarks
+          ,tu.name AS createBy
+          , DATE_FORMAT(mc.create_time, '%Y-%m-%d %H:%i') AS createTime
+          ,tu2.name AS updateBy
+          , DATE_FORMAT(mc.update_time, '%Y-%m-%d %H:%i') AS updateTime
+        FROM mst_contn mc
+        LEFT JOIN t_user tu ON tu.id = mc.create_by
+        LEFT JOIN t_user tu2 ON tu2.id = mc.update_by
+        LEFT JOIN t_dict td ON td.value = mc.contn_type AND td.groupno = 'CONTN_TYPE'
+        LEFT JOIN t_dict td2 ON td2.value = mc.active_flag AND td2.groupno = 'ACTIVE_FLAG'
+        LEFT JOIN t_dict td3 ON td3.value = mc.SPECIAL_CONTN_TYPE AND td3.groupno = 'SPECIAL_CONTN_TYPE'
+        LEFT JOIN mst_contn_owner mco ON mco.id = mc.contn_onwer_id
+        WHERE 1=1
+        <if test="contnNo != null and contnNo !=''">
+            AND mc.contn_no LIKE CONCAT('%', #{contnNo}, '%')
+        </if>
+        <if test="contnType != null and contnType !=''">
+            AND mc.contn_type = #{contnType}
+        </if>
+        <if test="activeFlag != null and activeFlag !=''">
+            AND mc.active_flag = #{activeFlag}
+        </if>
+        <if test="contnOwnerId != null and contnOwnerId !=''">
+            AND mc.contn_onwer_id = #{contnOwnerId}
+        </if>
+        <if test="specialContnType != null and specialContnType !=''">
+            AND mc.SPECIAL_CONTN_TYPE = #{specialContnType}
+        </if>
+    </select>
+
+    <select id="findContnById" resultType="ContnModel">
+        SELECT
+          mc.id AS id
+          ,mc.contn_no AS contnNo
+          ,mc.contn_type AS contnType
+          ,mc.SPECIAL_CONTN_TYPE AS specialContnType
+          ,mc.contn_onwer_id AS contnOwnerId
+          ,mc.active_flag AS activeFlag
+          ,mc.REMARKS AS remarks
+          ,tu.name AS createBy
+          , DATE_FORMAT(mc.create_time, '%Y-%m-%d %H:%i') AS createTime
+          ,tu2.name AS updateBy
+          , DATE_FORMAT(mc.update_time, '%Y-%m-%d %H:%i') AS updateTime
+        FROM mst_contn mc
+        LEFT JOIN t_user tu ON tu.id = mc.create_by
+        LEFT JOIN t_user tu2 ON tu2.id = mc.update_by
+        WHERE mc.id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.container.dao.ContainerDao" >
+
+	<insert id="addOrder">
+		INSERT INTO ord_header (
+		ORDER_NO,
+		CUS_CODE,
+		BUSINESS_NO1,
+		BUSINESS_NO2,
+		SPECIAL_CONTN_TYPE,
+		SEAL_NO,
+		IO_TYPE,
+		CHANGE_BOX_DATE,
+		CROSS_BOX_TIME,
+		BUSINESS_DATE,
+		ORDER_DATE,
+		INTER_GOODS,
+		EXTER_GOODS,
+		PLATE_NUM,
+		FRAME_NUM,
+		DRIVER_CODE,
+		RELATED_DRV_NAME,
+		ACCEPT_ORDER_FLAG,
+		CHARGING_TYPE,
+		QUANTITY,
+		UNIT_PRICE,
+		CONTAINER_TYPE,
+		DOCUMENT_NO,
+		BATCH_NO,
+		TRANSPORT_TYPE,
+		DEPARTURE_PLACE,
+		ARRIVAL_PLACE,
+		TRIP_FLAG,
+		STATUS,
+		REMARKS,
+		OVERWEIGHT_PRICE,
+		R_CONTA_FB_PRICE,
+		CONTA_BF_ID,
+		PRICE_CONTRACT_NO,
+		WEIGHT,
+		VOLUME,
+		ADJ_KM,
+		CONTN_OWNER_ID,
+		COST_ROUTE_ID,
+		CREATE_BY,
+		CREATE_TIME
+		)
+		VALUES
+		(
+		#{orderNo},
+		#{cusCode},
+		#{blNo},
+		#{contnNo},
+		#{specialContnType},
+		#{sealNo},
+		#{ioType},
+		#{changeBoxTime},
+		#{crossBoxTime},
+		#{departureDate},
+		#{orderDate},
+		#{goodsCodeIn},
+		#{goodsCodeOut},
+		#{plateNum},
+		#{frameNo},
+		#{driverCode},
+		#{relatedDrvName},
+		#{acceptOrderFlag},
+		#{chargingType},
+		#{count},
+		#{price},
+		#{bfLevelCode},
+		#{documentNo},
+		#{batchNo},
+		#{transportType},
+		#{fromZxAdrs},
+		#{toZxAdrs},
+		#{tripFlag},
+		'0',
+		#{remark},
+		#{overweightPrice},
+		#{rCusBfPrice},
+		#{contaBfId},
+		#{priceContract},
+		#{weight},
+		#{volume},
+		#{adjKm},
+		#{contnOwnerId},
+		#{costRouteId},
+		#{userId},
+		now()
+		)
+	</insert>
+
+	<select id="searchOrderList" resultType="ContainerModel">
+		SELECT
+		oh.ORDER_NO AS orderNoF,
+		oh.ORDER_NO AS orderNo,
+		mrc.COMPY_SNAME AS cusCode,
+		oh.BUSINESS_NO1 AS blNo,
+		oh.BUSINESS_NO2 AS contnNo,
+		oh.SEAL_NO AS sealNo,
+		DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') AS departureDate,
+		oh.ORDER_DATE AS orderDate,
+		oh.INTER_GOODS AS goodsCodeIn,
+		oh.EXTER_GOODS AS goodsCodeOut,
+		IFNULL(m1.name, oh.DEPARTURE_PLACE) AS startArr,
+		IFNULL(m2.name, oh.ARRIVAL_PLACE) AS distination,
+		oh.PLATE_NUM AS plateNum,
+		mtf.frame_card_id AS frameNo,
+		mtf.frame_num AS frameNum,
+		IFNULL(md.DRIVER_NAME,'') AS driverCode,
+		oh.ACCEPT_ORDER_FLAG AS acceptOrderFlag,
+		oh.CHARGING_TYPE AS chargingType,
+		CASE WHEN IFNULL(oh.QUANTITY, '') = '' THEN ''
+		WHEN oh.CHARGING_TYPE = '2' THEN round(oh.QUANTITY,3)
+		WHEN oh.CHARGING_TYPE = '3' THEN round(oh.QUANTITY,2)
+		ELSE oh.QUANTITY END AS count,
+		round(oh.UNIT_PRICE,2) AS price,
+		oh.REMARKS AS remark,
+		oh.CONTAINER_TYPE AS bfLevelCode,
+		oh.DOCUMENT_NO AS documentNo,
+		oh.BATCH_NO AS batchNo,
+		oh.TRANSPORT_TYPE AS transportType,
+		oh.TRIP_FLAG AS tripFlag,
+		oh.IO_TYPE AS ioType,
+		oh.CHANGE_BOX_DATE AS changeBoxTime,
+		DATE_FORMAT(oh.CROSS_BOX_TIME,'%Y-%m-%d') AS crossBoxTime,
+		oh.adj_km AS adjKm,
+		mt.TRAILER_BELONG_TYPE AS trailerBelongType,
+		mco.CONTN_OWNER_NAME as contnOwnerName,
+		oh.SPECIAL_CONTN_TYPE as specialContnType
+		FROM
+		ord_header oh
+		LEFT JOIN mst_related_compy mrc ON mrc.RELATED_COMPY_CODE = oh.CUS_CODE AND mrc.ACTIVE_FLAG = 'Y'
+		LEFT JOIN mst_driver md ON md.DRIVER_CODE = oh.DRIVER_CODE
+		LEFT JOIN mst_truck_frame mtf ON mtf.id = oh.FRAME_NUM
+		LEFT JOIN mst_zx_address m1 ON m1.id = oh.DEPARTURE_PLACE
+		LEFT JOIN mst_zx_address m2 ON m2.id = oh.ARRIVAL_PLACE
+		LEFT JOIN mst_trailer mt ON mt.PLATE_NUM = oh.PLATE_NUM
+		LEFT JOIN mst_contn_owner mco ON mco.id = oh.contn_owner_id
+		WHERE 1=1
+		<if test="cusCode != null and cusCode != ''">
+			AND oh.CUS_CODE = #{cusCode}
+		</if>
+		<if test="blNo != null and blNo != ''">
+			AND oh.BUSINESS_NO1 LIKE CONCAT('%', #{blNo},'%')
+		</if>
+		<if test="contnNo != null and contnNo != ''">
+			AND oh.BUSINESS_NO2 LIKE CONCAT('%', #{contnNo},'%')
+		</if>
+		<if test="sealNo != null and sealNo != ''">
+			AND oh.SEAL_NO LIKE CONCAT('%', #{sealNo},'%')
+		</if>
+		<if test="unScheduling == 'true' and scheduling == 'true'">
+			AND (oh.BUSINESS_DATE IS NULL OR (oh.BUSINESS_DATE IS NOT NULL
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &lt;= #{endTime}
+			</if>
+			))
+		</if>
+		<if test="unScheduling != 'true' and scheduling != 'true'">
+			AND (oh.BUSINESS_DATE IS NULL OR (oh.BUSINESS_DATE IS NOT NULL
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &lt;= #{endTime}
+			</if>
+			))
+		</if>
+		<if test="unScheduling == 'true' and scheduling != 'true'">
+			AND oh.BUSINESS_DATE IS NULL
+		</if>
+		<if test="unScheduling != 'true' and scheduling == 'true'">
+			AND oh.BUSINESS_DATE IS NOT NULL
+			<if test="beginTime != null and beginTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &gt;= #{beginTime}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				AND DATE_FORMAT(oh.BUSINESS_DATE,'%Y-%m-%d') &lt;= #{endTime}
+			</if>
+		</if>
+
+		<if test="orderDateBegin != null and orderDateBegin != ''">
+			AND oh.ORDER_DATE &gt;= #{orderDateBegin}
+		</if>
+		<if test="orderDateEnd != null and orderDateEnd != ''">
+			AND oh.ORDER_DATE &lt;= #{orderDateEnd}
+		</if>
+		<if test="goodsCodeIn != null and goodsCodeIn != ''">
+			AND oh.INTER_GOODS = #{goodsCodeIn}
+		</if>
+		<if test="goodsCodeOut != null and goodsCodeOut != ''">
+			AND oh.EXTER_GOODS = #{goodsCodeOut}
+		</if>
+		<if test="startArr != null and startArr != ''">
+			AND oh.DEPARTURE_PLACE = #{startArr}
+		</if>
+		<if test="distination != null and distination != ''">
+			AND oh.ARRIVAL_PLACE = #{distination}
+		</if>
+		<if test="plateNum != null and plateNum != ''">
+			AND oh.PLATE_NUM LIKE CONCAT('%', #{plateNum},'%')
+		</if>
+		<if test="frameNo != null and frameNo != ''">
+			AND oh.FRAME_NUM = #{frameNo}
+		</if>
+		<if test="driverCode != null and driverCode != ''">
+			AND oh.DRIVER_CODE = #{driverCode}
+		</if>
+		<if test="acceptOrderFlag != null and acceptOrderFlag != ''">
+			AND oh.ACCEPT_ORDER_FLAG = #{acceptOrderFlag}
+		</if>
+		<if test="tripFlag != null and tripFlag != '' and tripFlag != 'true' ">
+			AND (oh.TRIP_FLAG = #{tripFlag}
+				<if test="tripFlagNone != null and tripFlagNone != ''">
+					OR IFNULL(oh.TRIP_FLAG,'') = ''
+				</if>
+			)
+		</if>
+		<if test="tripFlag == 'true' ">
+			AND (oh.TRIP_FLAG  IN ('1','2')
+			<if test="tripFlagNone != null and tripFlagNone != ''">
+				OR IFNULL(oh.TRIP_FLAG,'') = ''
+			</if>
+			)
+		</if>
+		<if test="tripFlag == null or tripFlag == ''">
+			<if test="tripFlagNone != null and tripFlagNone != ''">
+				AND IFNULL(oh.TRIP_FLAG,'') = ''
+			</if>
+		</if>
+		<if test="chargingType != null and chargingType != ''">
+			AND oh.CHARGING_TYPE = #{chargingType}
+		</if>
+		<if test="documentNo != null and documentNo != ''">
+			AND oh.DOCUMENT_NO LIKE CONCAT('%', #{documentNo},'%')
+		</if>
+		<if test="batchNo != null and batchNo != ''">
+			AND oh.BATCH_NO LIKE CONCAT('%', #{batchNo},'%')
+		</if>
+		<if test="bfLevelCode != null and bfLevelCode != ''">
+			AND oh.CONTAINER_TYPE = #{bfLevelCode}
+		</if>
+		<if test="transportType != null and transportType != ''">
+			AND oh.TRANSPORT_TYPE = #{transportType}
+		</if>
+		<if test="ioType != null and ioType != ''">
+			AND oh.IO_TYPE = #{ioType}
+		</if>
+		<if test="crossBoxBeginTime != null and crossBoxBeginTime != ''">
+			AND DATE_FORMAT(oh.CROSS_BOX_TIME,'%Y-%m-%d') &gt;= #{crossBoxBeginTime}
+		</if>
+		<if test="crossBoxEndTime != null and crossBoxEndTime != ''">
+			AND DATE_FORMAT(oh.CROSS_BOX_TIME,'%Y-%m-%d') &lt;= #{crossBoxEndTime}
+		</if>
+		<if test="overdue != null and overdue != ''">
+			AND IFNULL(oh.CHANGE_BOX_DATE,'') = ''
+			AND IFNULL(oh.CROSS_BOX_TIME,'') != ''
+			AND datediff(date_format(NOW(),'%Y-%m-%d'), date_format(oh.CROSS_BOX_TIME,'%Y-%m-%d')) &gt;=-1
+		</if>
+		<if test="wagesFlag == 'true' and freightFlag != 'true'">
+			AND (SELECT COUNT(orp.ORDER_NO) FROM ord_receipts_payments orp WHERE orp.ORDER_NO = oh.ORDER_NO AND orp.PI_CODE = 'PI_SJGZ') = 0
+		</if>
+		<if test="wagesFlag != 'true' and freightFlag == 'true'">
+			AND (SELECT COUNT(orp.ORDER_NO) FROM ord_receipts_payments orp WHERE orp.ORDER_NO = oh.ORDER_NO AND orp.PI_CODE = 'PI_YF') = 0
+		</if>
+		<if test="wagesFlag == 'true' and freightFlag == 'true'">
+			AND (SELECT COUNT(orp.ORDER_NO) FROM ord_receipts_payments orp WHERE orp.ORDER_NO = oh.ORDER_NO AND orp.PI_CODE = 'PI_SJGZ') = 0
+			AND (SELECT COUNT(orp.ORDER_NO) FROM ord_receipts_payments orp WHERE orp.ORDER_NO = oh.ORDER_NO AND orp.PI_CODE = 'PI_YF') = 0
+		</if>
+		<if test="trailerBelongType != null and trailerBelongType != ''">
+			AND mt.TRAILER_BELONG_TYPE = #{trailerBelongType}
+		</if>
+		<if test="specialContnType != null and specialContnType != ''">
+			AND oh.SPECIAL_CONTN_TYPE = #{specialContnType}
+		</if>
+		<if test="page.orderBy ==null or page.orderBy ==''">
+			order by departureDate,plateNum,FIELD(tripFlag,"1","2")
+		</if>
+		<if test="page.orderBy !=null and page.orderBy !=''">
+			order by ${page.orderBy}
+		</if>
+	</select>
+
+	<select id="searchOrder" resultType="ContainerModel">
+		  SELECT
+			<include refid="orderFields"></include>
+		FROM
+			ord_header oh
+		LEFT JOIN mst_truck_frame mtf ON mtf.id = oh.FRAME_NUM
+		WHERE oh.ORDER_NO = #{orderNo}
+	</select>
+
+	<update id="updateOrder">
+		UPDATE ord_header
+		SET CUS_CODE = #{cusCode}
+			,BUSINESS_NO1 = #{blNo}
+			,BUSINESS_NO2 = #{contnNo}
+			,SPECIAL_CONTN_TYPE = #{specialContnType}
+			,SEAL_NO = #{sealNo}
+			,IO_TYPE = #{ioType}
+			,CHANGE_BOX_DATE = #{changeBoxTime}
+			,CROSS_BOX_TIME = #{crossBoxTime}
+			,BUSINESS_DATE = #{departureDate}
+			,ORDER_DATE = #{orderDate}
+			,INTER_GOODS = #{goodsCodeIn}
+			,EXTER_GOODS = #{goodsCodeOut}
+  			,PLATE_NUM = #{plateNum}
+			,FRAME_NUM = #{frameNo}
+			,DRIVER_CODE = #{driverCode}
+			,RELATED_DRV_NAME = #{relatedDrvName}
+			,ACCEPT_ORDER_FLAG = #{acceptOrderFlag}
+			,CHARGING_TYPE = #{chargingType}
+			,QUANTITY = #{count}
+			,UNIT_PRICE = #{price}
+			,CONTAINER_TYPE = #{bfLevelCode}
+			,DOCUMENT_NO = #{documentNo}
+			,BATCH_NO = #{batchNo}
+			,TRANSPORT_TYPE = #{transportType}
+			,DEPARTURE_PLACE = #{fromZxAdrs}
+			,ARRIVAL_PLACE = #{toZxAdrs}
+			,TRIP_FLAG = #{tripFlag}
+			,REMARKS = #{remark}
+			,OVERWEIGHT_PRICE = #{overweightPrice}
+			,R_CONTA_FB_PRICE = #{rCusBfPrice}
+			,CONTA_BF_ID = #{contaBfId}
+			,PRICE_CONTRACT_NO = #{priceContract}
+			,WEIGHT = #{weight}
+			,VOLUME = #{volume}
+			,ADJ_KM = #{adjKm}
+			,CONTN_OWNER_ID = #{contnOwnerId}
+			,COST_ROUTE_ID = #{costRouteId}
+			,UPDATE_BY = #{userId}
+			,UPDATE_TIME = now()
+		WHERE
+			ORDER_NO = #{orderNo}
+	</update>
+
+	<select id="searchFrameNum" resultType="java.lang.String">
+		SELECT
+			frame_num
+		FROM
+			mst_truck_frame
+		WHERE id = #{id}
+	</select>
+	<select id="getDriverCode" resultType="ContainerModel">
+		SELECT
+			mt.CURRENT_DRV_CODE AS driverCode
+			,mrc.compy_sname AS relatedDrvName
+			,if(ifnull(mt.attach_drv_code, '') != '', mt.attach_drv_code, mt.outer_drv_code) AS relatedDrvCode
+			,mt.TRAILER_BELONG_TYPE AS trailerBelongType
+		FROM
+			mst_trailer mt
+		LEFT JOIN mst_related_compy mrc ON (mrc.related_compy_code = mt.outer_drv_code OR mrc.related_compy_code = mt.attach_drv_code)
+		WHERE mt.PLATE_NUM = #{plateNum}
+	</select>
+
+	<select id="getLikeContnNos" resultType="java.lang.String">
+		SELECT contn_no FROM mst_contn WHERE active_flag = 'Y'
+		<if test="contnNo != null and contnNo != ''">
+			AND contn_no LIKE concat('%', #{contnNo}, '%')
+		</if>
+	</select>
+
+	<select id="getContainerType" resultType="ContainerModel">
+		SELECT mc.contn_no as contnNo
+			  , mc.contn_type as contnType
+			  , mc.contn_onwer_id as contnOwnerId
+		FROM
+			mst_contn mc
+		WHERE mc.contn_no = #{contnNo} LIMIT 1
+	</select>
+
+	<select id="listOrdersByContnNo" resultType="ContainerModel">
+		SELECT
+			<include refid="orderFields"></include>
+		FROM ord_header oh
+		LEFT JOIN mst_truck_frame mtf ON mtf.id = oh.FRAME_NUM
+		WHERE oh.BUSINESS_NO2 = #{contnNo}
+		<if test="crossBoxTime != null and crossBoxTime != ''">
+			AND oh.cross_box_time = #{crossBoxTime}
+		</if>
+		<if test="crossBoxTime == null">
+			AND ifNull(oh.cross_box_time, '') = ''
+		</if>
+	</select>
+
+	<update id="batchUpdateCrossBoxTimeByContnNo">
+		UPDATE ord_header oh
+		SET cross_box_time = #{crossBoxTime}
+			,update_by = #{userId}
+			,update_time = now()
+		WHERE oh.BUSINESS_NO2 = #{contnNo}
+		<if test="oldCrossBoxTime != null and oldCrossBoxTime != ''">
+			AND oh.cross_box_time = #{oldCrossBoxTime}
+		</if>
+		<if test="oldCrossBoxTime == null">
+			AND ifNull(oh.cross_box_time, '') = ''
+		</if>
+	</update>
+
+	<update id="batchUpdateChangeBoxTimeByContnNo">
+		UPDATE ord_header oh
+		SET change_box_date = #{changeBoxTime}
+			,update_by = #{userId}
+			,update_time = now()
+		WHERE oh.BUSINESS_NO2 = #{contnNo}
+		<if test="oldChangeBoxTime != null and oldChangeBoxTime != ''">
+			AND oh.change_box_date = #{oldChangeBoxTime}
+		</if>
+		<if test="oldChangeBoxTime == null">
+			AND ifNull(oh.change_box_date, '') = ''
+		</if>
+	</update>
+
+	<select id="getCrossBoxTimeByContnNo" resultType="java.lang.String">
+		SELECT DATE_FORMAT(CROSS_BOX_TIME,'%Y-%m-%d') AS crossBoxTime FROM `ord_header` WHERE BUSINESS_NO2 =#{contnNo} AND IFNULL(CHANGE_BOX_DATE,'') = '' ORDER BY CREATE_TIME DESC LIMIT 1;
+	</select>
+
+	<select id="getStdAdrsCodesByZxd" resultType="ContainerModel">
+		SELECT a.province_code AS provinceCode
+			,a.city_code AS cityCode
+			,a.district_code AS districtCode
+			,a.county_code AS countyCode
+			,a1.name AS provinceName
+			,a2.name AS cityName
+			,a3.name AS districtName
+			,a4.name AS countyName
+			,CONCAT_WS('', a1.`name`,a2.`name`, a3.`name`, a4.`name`, a.address) AS addressFull
+			,CONCAT_WS(',', if(a.contact_person='', NULL ,a.contact_person), if(a.contact_person2='', NULL ,a.contact_person2), if(a.contact_person3='', NULL ,a.contact_person3)) AS contactPerson
+			,CONCAT_WS(',', if(a.contact_phone='', NULL ,a.contact_phone), if(a.contact_phone2='', NULL ,a.contact_phone2), if(a.contact_phone3='', NULL ,a.contact_phone3)) AS contactPhone
+		FROM mst_zx_address a
+		LEFT JOIN mst_std_address a1 ON a1.`code` = a.province_code
+		LEFT JOIN mst_std_address a2 ON a2.`code` = a.city_code
+		LEFT JOIN mst_std_address a3 ON a3.`code` = a.district_code
+		LEFT JOIN mst_std_address a4 ON a4.`code` = a.county_code
+		WHERE id = #{zxdId}
+	</select>
+
+	<select id="getPriceContracts" resultType="HelperModel">
+		SELECT b.price_contract_no AS `value`
+			  ,b.contract_name AS text
+	  	FROM price_contract_cus a
+	 	LEFT JOIN price_contract b ON b.price_contract_no = a.price_contract_no AND b.valid_flag = 'Y'
+	  	WHERE a.cus_code = #{cusCode}
+	</select>
+
+	<select id="getPriceContractsByStdAddrs" resultType="PriceContractModel">
+		SELECT
+			PCB.ID AS priceContractId,
+			PCB.R_CUS_BF_PRICE AS rCusBfPrice,
+			PCB.R_CUS_BF_PRICE_NO_TAX AS rCusBfPriceNoTax,
+			PCB.ROUND_TRIP_FLAG AS roundTripFlag,
+			PCB.OVERWEIGHT_PRICE AS overweightPrice,
+			PCB.LIMIT_WEIGHT AS limitWeight,
+			PCB.REMARKS AS remarks
+		FROM PRICE_CONTRACT_BF PCB
+		WHERE PCB.PRICE_CONTRACT_NO = #{priceContractNo}
+		AND PCB.CHARGING_TYPE = #{chargingType}
+		AND PCB.VALID_FLAG = 'Y'
+		<if test="chargingType == '1'.toString()">
+			AND PCB.CONTAINER_TYPE = #{levelCode}
+		</if>
+		<if test="binsType != null and binsType != ''">
+			AND PCB.BINS_TYPE = #{binsType}
+		</if>
+		<if test="ioType != null and ioType != ''">
+			AND PCB.IO_TYPE = #{ioType}
+		</if>
+		<if test="roundTripFlag != null and roundTripFlag != ''">
+			AND PCB.ROUND_TRIP_FLAG = #{roundTripFlag}
+		</if>
+		<if test="fromProvinceCode != null and fromProvinceCode != ''">
+			AND PCB.FROM_PROVINCE_CODE = #{fromProvinceCode}
+		</if>
+		<if test="fromProvinceCode == null">
+			AND (PCB.FROM_PROVINCE_CODE IS NULL OR PCB.FROM_PROVINCE_CODE = '')
+		</if>
+		<if test="fromCityCode != null and fromCityCode != ''">
+			AND PCB.FROM_CITY_CODE = #{fromCityCode}
+		</if>
+		<if test="fromCityCode == null">
+			AND (PCB.FROM_CITY_CODE IS NULL OR PCB.FROM_CITY_CODE = '')
+		</if>
+		<if test="fromDistrictCode != null and fromDistrictCode != ''">
+			AND PCB.FROM_DISTRICT_CODE = #{fromDistrictCode}
+		</if>
+		<if test="fromDistrictCode == null">
+			AND (PCB.FROM_DISTRICT_CODE IS NULL OR PCB.FROM_DISTRICT_CODE = '')
+		</if>
+		<if test="fromCountyCode != null and fromCountyCode != ''">
+			AND PCB.FROM_COUNTY_CODE = #{fromCountyCode}
+		</if>
+		<if test="fromCountyCode == null">
+			AND (PCB.FROM_COUNTY_CODE IS NULL OR PCB.FROM_COUNTY_CODE = '')
+		</if>
+		<if test="toProvinceCode != null and toProvinceCode != ''">
+			AND PCB.TO_PROVINCE_CODE = #{toProvinceCode}
+		</if>
+		<if test="toProvinceCode == null">
+			AND (PCB.TO_PROVINCE_CODE IS NULL OR PCB.TO_PROVINCE_CODE = '')
+		</if>
+		<if test="toCityCode != null and toCityCode != ''">
+			AND PCB.TO_CITY_CODE = #{toCityCode}
+		</if>
+		<if test="toCityCode == null">
+			AND (PCB.TO_CITY_CODE IS NULL OR PCB.TO_CITY_CODE = '')
+		</if>
+		<if test="toDistrictCode != null and toDistrictCode != ''">
+			AND PCB.TO_DISTRICT_CODE = #{toDistrictCode}
+		</if>
+		<if test="toDistrictCode == null">
+			AND (PCB.TO_DISTRICT_CODE IS NULL OR PCB.TO_DISTRICT_CODE = '')
+		</if>
+		<if test="toCountyCode != null and toCountyCode != ''">
+			AND PCB.TO_COUNTY_CODE = #{toCountyCode}
+		</if>
+		<if test="toCountyCode == null">
+			AND (PCB.TO_COUNTY_CODE IS NULL OR PCB.TO_COUNTY_CODE = '')
+		</if>
+	</select>
+
+	<select id="getPriceContractsByStdAddrsByIds" resultType="PriceContractModel">
+		SELECT
+			PCB.ID AS priceContractId,
+			PC.CONTRACT_NAME AS contractName,
+			TD.LABEL AS chargingType,
+			PCB.R_CUS_BF_PRICE AS rCusBfPrice,
+			PCB.R_CUS_BF_PRICE_NO_TAX AS rCusBfPriceNoTax,
+			PCB.ROUND_TRIP_FLAG AS roundTripFlag,
+			IF(PCB.ROUND_TRIP_FLAG = 'Y', '是', '否') AS roundTripFlagName,
+			PCB.ROUND_TRIP_FLAG AS roundTripFlag,
+			PCB.OVERWEIGHT_PRICE AS overweightPrice,
+			PCB.LIMIT_WEIGHT AS limitWeight,
+			PCB.REMARKS AS remarks
+		FROM PRICE_CONTRACT_BF PCB
+		LEFT JOIN PRICE_CONTRACT PC ON PC.PRICE_CONTRACT_NO = PCB.PRICE_CONTRACT_NO
+		LEFT JOIN T_DICT TD ON TD.`VALUE` = PCB.CHARGING_TYPE AND TD.GROUPNO = 'CHARGING_TYPE'
+		WHERE PCB.id IN
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+	<select id="countByCreateTime" resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM ord_header WHERE ORDER_NO = #{orderNo} AND CREATE_TIME > (SELECT label FROM t_dict t WHERE t.groupno = #{limitTimeGroupno}
+				<if test="dictValue != null and dictValue != ''">
+					AND `value` = #{dictValue}
+				</if>
+		 		LIMIT 1)
+	</select>
+
+	<select id="getLinkUpTripOrder" resultType="java.lang.String">
+		SELECT
+			oh.ORDER_NO
+		FROM ord_header oh
+		INNER JOIN ord_route_info ori ON ori.order_no = oh.ORDER_NO AND ori.address_type = '010' AND ori.county_code = #{toCountyCode}
+		INNER JOIN ord_route_info ori2 ON ori2.order_no = oh.ORDER_NO AND ori2.address_type = '020' AND ori2.county_code = #{fromCountyCode}
+		WHERE oh.TRIP_FLAG = '1' AND oh.BUSINESS_NO2 = #{contnNo}
+		ORDER BY oh.CREATE_TIME DESC LIMIT 1
+	</select>
+
+	<update id="updateLinkUpOrder">
+		UPDATE ord_header
+		SET R_CONTA_FB_PRICE = #{rCusBfPrice}
+			,CONTA_BF_ID = #{contaBfId}
+			,PRICE_CONTRACT_NO = #{priceContract}
+		WHERE ORDER_NO = #{orderNo}
+	</update>
+
+	<select id="listStdAddressesByCodes" resultType="com.xzg56.jg.modules.mst.oilManagement.model.SelectModel">
+		SELECT code AS value, name AS text FROM mst_std_address WHERE 1=1
+		<if test="list != null and list.size() > 0">
+			AND code IN
+			<foreach collection="list" open="(" separator="," close=")" item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="countRoleWithoutDispatcher" resultType="java.lang.Integer">
+		SELECT count(1) FROM t_role_user WHERE user_id = #{userId} AND role_id != 4
+	</select>
+
+	<select id="getFuelPrice" resultType="java.lang.String">
+		SELECT a.price FROM mst_fuel_price a WHERE a.QUOTEDATE &lt;= #{departureDate} ORDER BY a.QUOTEDATE DESC limit 1
+	</select>
+
+	<select id="getZxAdrsNameById" resultType="java.lang.String">
+		SELECT name FROM mst_zx_address WHERE id = #{id}
+	</select>
+
+	<sql id="orderFields">
+		oh.ORDER_NO AS orderNo,
+		oh.CUS_CODE AS cusCode,
+		oh.BUSINESS_NO1 AS blNo,
+		oh.BUSINESS_NO2 AS contnNo,
+		oh.SEAL_NO AS sealNo,
+		oh.BUSINESS_DATE AS departureDate,
+		oh.ORDER_DATE AS orderDate,
+		oh.INTER_GOODS AS goodsCodeIn,
+		oh.EXTER_GOODS AS goodsCodeOut,
+		oh.DEPARTURE_PLACE AS fromZxAdrs,
+		oh.ARRIVAL_PLACE AS toZxAdrs,
+		oh.PLATE_NUM AS plateNum,
+		mtf.id AS frameNo,
+		mtf.frame_num AS frameNum,
+		oh.DRIVER_CODE AS driverCode,
+		oh.RELATED_DRV_NAME AS relatedDrvName,
+		CASE WHEN oh.ACCEPT_ORDER_FLAG = 'Y' THEN 'Y' ELSE '' END AS collectionOrderYes,
+		CASE WHEN oh.ACCEPT_ORDER_FLAG = 'N' THEN 'N' ELSE '' END AS collectionOrderNo,
+		CASE WHEN oh.TRIP_FLAG = '1' THEN '1' ELSE '' END AS tripFlagUp,
+		CASE WHEN oh.TRIP_FLAG = '2' THEN '2' ELSE '' END AS tripFlagDown,
+		oh.CHARGING_TYPE AS chargingType,
+		CASE WHEN oh.CHARGING_TYPE = '2' AND IFNULL(oh.QUANTITY,'') != '' THEN round(oh.QUANTITY,3)
+		WHEN oh.CHARGING_TYPE = '3' AND IFNULL(oh.QUANTITY,'') != '' THEN round(oh.QUANTITY,2)
+		ELSE oh.QUANTITY END AS count,
+		round(oh.UNIT_PRICE,2) AS price,
+		oh.REMARKS AS remark,
+		oh.CONTAINER_TYPE AS bfLevelCode,
+		oh.DOCUMENT_NO AS documentNo,
+		oh.BATCH_NO AS batchNo,
+		oh.TRANSPORT_TYPE AS transportType,
+		oh.IO_TYPE AS ioType,
+		oh.CHANGE_BOX_DATE AS changeBoxTime,
+		DATE_FORMAT(oh.CROSS_BOX_TIME,'%Y-%m-%d') AS crossBoxTime,
+		oh.R_CONTA_FB_PRICE AS rCusBfPrice,
+		oh.CONTA_BF_ID AS contaBfId,
+		oh.OVERWEIGHT_PRICE AS overweightPrice,
+		oh.PRICE_CONTRACT_NO AS priceContract,
+		oh.WEIGHT AS weight,
+		oh.VOLUME AS volume,
+		oh.adj_km AS adjKm,
+		oh.contn_owner_id as contnOwnerId,
+		oh.SPECIAL_CONTN_TYPE as specialContnType,
+		oh.COST_ROUTE_ID as costRouteId
+	</sql>
+
+	<select id="getOrdSpecialContnCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			ord_header
+		WHERE
+			BUSINESS_NO2 = #{contnNo}
+		AND SPECIAL_CONTN_TYPE IS NOT NULL
+		AND SPECIAL_CONTN_TYPE != ''
+	</select>
+
+	<select id="lastDepartureDateOrder" resultType="java.lang.String">
+		SELECT
+			ORDER_NO
+		FROM
+			ord_header
+		WHERE
+			BUSINESS_NO2 = #{contnNo}
+		ORDER BY
+			BUSINESS_DATE DESC
+		LIMIT 1
+	</select>
+
+	<select id="listCostRoutes" resultType="com.xzg56.jg.modules.mst.costroute.model.CostRouteModel">
+		SELECT
+			MCR.ID AS id,
+			MCR.distance_adj_km AS distanceAdjKm,
+			MCR.std_drv_sal_price AS stdDrvSalPrice,
+			MCR.REMARKS AS remarks
+		FROM MST_COST_ROUTE MCR
+		WHERE MCR.VALID_FLAG = 'Y'
+		<if test="trailerBelongType != null and trailerBelongType != ''">
+			<if test="trailerBelongType == '1'.toString()">
+				AND MCR.TRAILER_BELONG_TYPE = '0'
+			</if>
+			<if test="trailerBelongType != '1'.toString()">
+				AND MCR.TRAILER_BELONG_TYPE = #{trailerBelongType}
+			</if>
+		</if>
+		<if test="fromProvinceCode != null and fromProvinceCode != ''">
+			AND MCR.FROM_PROVINCE_CODE = #{fromProvinceCode}
+			AND (MCR.FROM_CITY_CODE IS NULL OR MCR.FROM_CITY_CODE = '')
+			AND (MCR.FROM_DISTRICT_CODE IS NULL OR MCR.FROM_DISTRICT_CODE = '')
+			AND (MCR.FROM_COUNTY_CODE IS NULL OR MCR.FROM_COUNTY_CODE = '')
+		</if>
+		<if test="fromCityCode != null and fromCityCode != ''">
+			AND MCR.FROM_CITY_CODE = #{fromCityCode}
+			AND (MCR.FROM_DISTRICT_CODE IS NULL OR MCR.FROM_DISTRICT_CODE = '')
+			AND (MCR.FROM_COUNTY_CODE IS NULL OR MCR.FROM_COUNTY_CODE = '')
+		</if>
+		<if test="fromDistrictCode != null and fromDistrictCode != ''">
+			AND MCR.FROM_DISTRICT_CODE = #{fromDistrictCode}
+			AND (MCR.FROM_COUNTY_CODE IS NULL OR MCR.FROM_COUNTY_CODE = '')
+		</if>
+		<if test="fromCountyCode != null and fromCountyCode != ''">
+			AND MCR.FROM_COUNTY_CODE = #{fromCountyCode}
+		</if>
+		<if test="toProvinceCode != null and toProvinceCode != ''">
+			AND MCR.TO_PROVINCE_CODE = #{toProvinceCode}
+			AND (MCR.TO_CITY_CODE IS NULL OR MCR.TO_CITY_CODE = '')
+			AND (MCR.TO_DISTRICT_CODE IS NULL OR MCR.TO_DISTRICT_CODE = '')
+			AND (MCR.TO_COUNTY_CODE IS NULL OR MCR.TO_COUNTY_CODE = '')
+		</if>
+		<if test="toCityCode != null and toCityCode != ''">
+			AND MCR.TO_CITY_CODE = #{toCityCode}
+			AND (MCR.TO_DISTRICT_CODE IS NULL OR MCR.TO_DISTRICT_CODE = '')
+			AND (MCR.TO_COUNTY_CODE IS NULL OR MCR.TO_COUNTY_CODE = '')
+		</if>
+		<if test="toDistrictCode != null and toDistrictCode != ''">
+			AND MCR.TO_DISTRICT_CODE = #{toDistrictCode}
+			AND (MCR.TO_COUNTY_CODE IS NULL OR MCR.TO_COUNTY_CODE = '')
+		</if>
+		<if test="toCountyCode != null and toCountyCode != ''">
+			AND MCR.TO_COUNTY_CODE = #{toCountyCode}
+		</if>
+	</select>
+
+	<select id="listCostRoutesByIds" resultType="com.xzg56.jg.modules.mst.costroute.model.CostRouteModel">
+		SELECT
+			MCR.ID AS id,
+			MCR.distance_adj_km AS distanceAdjKm,
+			MCR.std_drv_sal_price AS stdDrvSalPrice,
+			MCR.REMARKS AS remarks
+		FROM MST_COST_ROUTE MCR
+		WHERE MCR.id IN
+		<foreach collection="list" item="item" open=" (" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+</mapper>

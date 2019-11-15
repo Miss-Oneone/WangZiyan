@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.gpsKmAdjust.dao.GPSKmAdjustDao">
+    <!-- 主查询-->
+    <select id="search" resultType="GPSKmAdjustModel">
+        SELECT gka.ID AS id
+        ,gka.DRIVER_CODE AS driverCode
+        ,md.DRIVER_NAME AS driverName
+        ,gka.PLATE_NUM AS plateNum
+        ,DATE_FORMAT(gka.ADJUST_TIME,'%Y-%m-%d') AS adjustTime
+        ,gka.ADJUST_KM AS adjustKm
+        ,gka.ADJUST_REMARK AS adjustRemark
+        FROM gps_km_adjust gka
+        LEFT JOIN mst_driver md ON md.DRIVER_CODE = gka.DRIVER_CODE
+        WHERE 1=1
+        <if test="timeFrom != null and timeFrom != ''">
+            AND DATE_FORMAT(ADJUST_TIME,'%Y-%m-%d') &gt;= #{timeFrom}
+        </if>
+        <if test="timeTo != null and timeTo != ''">
+            AND DATE_FORMAT(ADJUST_TIME,'%Y-%m-%d') &lt;= #{timeTo}
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            AND gka.DRIVER_CODE = #{driverCode}
+        </if>
+        <if test="id != null and id != '' ">
+            AND gka.id = #{id}
+        </if>
+    </select>
+
+    <insert id="insertGPSKmAdjust">
+        INSERT INTO gps_km_adjust
+        (DRIVER_CODE
+        ,PLATE_NUM
+        ,ADJUST_KM
+        ,ADJUST_TIME
+        ,ADJUST_REMARK
+        ,CREATE_BY
+        ,CREATE_TIME)
+        VALUES (#{driverCode}
+        ,#{plateNum}
+        ,#{adjustKm}
+        ,#{adjustTime}
+        ,#{adjustRemark}
+        ,#{createBy}
+        ,now()
+        )
+    </insert>
+
+    <update id="updateGPSKmAdjust">
+        UPDATE gps_km_adjust
+        SET DRIVER_CODE = #{driverCode}
+        ,PLATE_NUM = #{plateNum}
+        ,ADJUST_KM = #{adjustKm}
+        ,ADJUST_TIME = #{adjustTime}
+        ,ADJUST_REMARK = #{adjustRemark}
+        ,UPDATE_BY = #{updateBy}
+        ,UPDATE_TIME = now()
+        WHERE ID = #{id}
+    </update>
+</mapper>

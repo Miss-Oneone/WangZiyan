@@ -1,0 +1,36 @@
+.firstColumn{
+	width:16%;
+}
+.secondColumn{
+	width:18%;
+}
+.thirdColumn{
+	width:12%;
+}
+.tblColumn1{
+	width:45%;
+}
+.tblColumn2{
+	width:10%;
+}
+.tblColumn3{
+	width:45%;
+}
+.sum{
+	width:20%;
+}
+.amounts{
+	width:60%;
+}
+.inputText{
+	width:146px;
+}
+#textCenter{
+	text-align:center;
+}
+#textLeft{
+	text-align:left;
+}
+#textRight{
+	text-align:right;
+}

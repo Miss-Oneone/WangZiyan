@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.pricecontract.dao.PriceContractManDao">
+
+	<select id="getOrdGroupInputListByCusCode" resultType="PriceContractTransModel">
+		select pcc.CUS_CODE AS cusCode
+		,GROUP_CONCAT(DISTINCT IFNULL(pc.ORD_INPUT_GROUP,'')) AS ordInputGroup
+		from price_contract_cus pcc
+		LEFT JOIN price_contract pc on pcc.PRICE_CONTRACT_NO = pc.PRICE_CONTRACT_NO
+		WHERE pc.VALID_FLAG = 'Y' AND pcc.VALID_FLAG = 'Y'
+		GROUP BY pcc.CUS_CODE
+	</select>
+
+	<select id="getOrdGroupInputListByPriceContractNo" resultType="PriceContractTransModel">
+		select pc.PRICE_CONTRACT_NO AS priceContractNo
+		,GROUP_CONCAT(DISTINCT IFNULL(pc.ORD_INPUT_GROUP,'')) AS ordInputGroup
+		from  price_contract pc
+		WHERE pc.VALID_FLAG = 'Y'
+		GROUP BY pc.PRICE_CONTRACT_NO
+	</select>
+
+	<select id="getPriceContractBfList" resultType="PriceContractBfModel">
+		SELECT PCB.ID                                            AS id
+		,PC.CONTRACT_NAME                                        AS priceContractName
+		,PC.PRICE_CONTRACT_NO                                    AS priceContractNo
+		,PCB.REMARKS                                             AS remarks
+		,PCB.R_CUS_BF_PRICE                                      AS rCusBfPrice
+		,PCB.from_province_code                                       as fromProvinceCode
+		,PCB.from_city_code                                           as fromCityCode
+		,PCB.from_district_code                                       as fromDistrictCode
+		,PCB.from_county_code                                         as fromCountyCode
+		,PCB.to_province_code                                       as toProvinceCode
+		,PCB.to_city_code                                           as toCityCode
+		,PCB.to_district_code                                       as toDistrictCode
+		,PCB.to_county_code                                         as toCountyCode
+		,MSA.NAME                                                AS fromProvinceName
+		,MSA1.NAME                                               AS fromCityName
+		,MSA2.NAME                                               AS fromDistrictName
+		,MSA3.NAME                                               AS fromCountyName
+		,MSA4.NAME                                                AS toProvinceName
+		,MSA5.NAME                                               AS toCityName
+		,MSA6.NAME                                               AS toDistrictName
+		,MSA7.NAME                                               AS toCountyName
+		,TU1.NAME                                                AS createBy
+		,DATE_FORMAT(PCB.CREATE_TIME, '%Y-%m-%d')                AS createTimeFmt
+		,TU2.NAME                                                AS updateBy
+		,DATE_FORMAT(PCB.UPDATE_TIME, '%Y-%m-%d')                AS updateTimeFmt
+-- 		,case when (pc.VALID_FLAG = 'Y'
+-- 		AND PC.EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d')
+-- 		and PC.EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d'))
+-- 		THEN 'Y' ELSE 'N' END as effectiveStatus
+		,PCB.VALID_FLAG AS effectiveStatus
+		,PCB.BINS_TYPE  AS binsType
+		,PCB.IO_TYPE  AS ioType
+		,PCB.CONTAINER_TYPE                                      AS containerType
+		,PCB.ROUND_TRIP_FLAG as roundTripFlag
+		,PCB.OVERWEIGHT_PRICE as overweightPrice
+		,PCB.LIMIT_WEIGHT as limitWeight
+		,PCB.CHARGING_TYPE as chargingType
+		FROM PRICE_CONTRACT_BF PCB
+		LEFT JOIN PRICE_CONTRACT PC ON PCB.PRICE_CONTRACT_NO= PC.PRICE_CONTRACT_NO
+		LEFT JOIN MST_STD_ADDRESS MSA ON MSA.CODE =   PCB.FROM_PROVINCE_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA1 ON MSA1.CODE = PCB.FROM_CITY_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA2 ON MSA2.CODE = PCB.FROM_DISTRICT_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA3 ON MSA3.CODE = PCB.FROM_COUNTY_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA4 ON MSA4.CODE = PCB.TO_PROVINCE_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA5 ON MSA5.CODE = PCB.TO_CITY_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA6 ON MSA6.CODE = PCB.TO_DISTRICT_CODE
+		LEFT JOIN MST_STD_ADDRESS MSA7 ON MSA7.CODE = PCB.TO_COUNTY_CODE
+		LEFT JOIN T_USER TU1 ON PCB.CREATE_BY= TU1.ID
+		LEFT JOIN T_USER TU2 ON PCB.UPDATE_BY= TU2.ID
+-- 		WHERE PCB.VALID_FLAG = 'Y'
+		WHERE 1=1
+		<include refid="condition" />
+		<if test="id != null and id != ''">
+			AND PCB.id = #{id}
+		</if>
+		<if test="effectiveStatus != null and effectiveStatus!= ''" >
+			AND PCB.VALID_FLAG = #{effectiveStatus}
+		</if>
+		<if test="page.orderBy != null and page.orderBy != ''">
+			<if test="page.orderBy == 'containerName desc'.toString()">
+				ORDER BY  containerType DESC
+			</if>
+			<if test="page.orderBy == 'containerName asc'.toString()">
+				ORDER BY  containerType ASC
+			</if>
+			<if test="page.orderBy != 'containerName desc'.toString() and page.orderBy != 'containerName asc'.toString()">
+				ORDER BY  ${page.orderBy}
+			</if>
+		</if>
+	</select>
+
+	<select id="getName" resultType="PriceContractBfModel">
+		SELECT
+		S.`NAME` AS text,S.CODE AS value
+		FROM
+		MST_STD_ADDRESS S
+		WHERE
+		S.PCODE = #{pcode}
+		GROUP BY
+		text
+		ORDER BY
+		S.CODE
+	</select>
+
+	<select id="getPriceContractInfo" resultType="mstPriceContractModel">
+		select * from price_contract
+		where PRICE_CONTRACT_NO = #{priceContractNo}
+		<if test="validFlag != null and validFlag != ''">
+			AND VALID_FLAG = 'Y'
+			AND EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d')
+			AND EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d')
+		</if>
+	</select>
+
+	<select id="checkInfo" resultType="PriceContractBfModel">
+		select PCB.* FROM PRICE_CONTRACT_BF PCB
+		where PCB.VALID_FLAG = 'Y'
+		<include refid="condition"/>
+		<if test="effectiveStatus != null and effectiveStatus!= ''" >
+			and (('Y' = #{effectiveStatus} AND pc.VALID_FLAG = #{effectiveStatus} AND PC.EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d') and PC.EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d'))
+			or (('N' = #{effectiveStatus} and (pc.VALID_FLAG = #{effectiveStatus} or PC.EFFECT_START_TIME > DATE_FORMAT(now(),'%Y-%m-%d') or PC.EFFECT_END_TIME &lt; DATE_FORMAT(now(),'%Y-%m-%d')))))
+		</if>
+		<if test="id != null and id != ''">
+			AND PCB.id  !=  #{id}
+		</if>
+	</select>
+
+	<sql id="priceContractCondition">
+		<if test="priceContractNo != null and priceContractNo != ''">
+			AND PC.PRICE_CONTRACT_NO = #{priceContractNo}
+		</if>
+		<if test="contractName != null and contractName != ''">
+			AND PC.CONTRACT_NAME LIKE CONCAT('%',#{contractName},'%')
+		</if>
+		<if test="effectiveStatus != null and effectiveStatus!= ''" >
+			AND (('Y' = #{effectiveStatus} AND pc.VALID_FLAG = #{effectiveStatus} AND PC.EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d') AND PC.EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d'))
+			OR (('N' = #{effectiveStatus} AND (pc.VALID_FLAG = #{effectiveStatus} OR PC.EFFECT_START_TIME > DATE_FORMAT(now(),'%Y-%m-%d') OR PC.EFFECT_END_TIME &lt; DATE_FORMAT(now(),'%Y-%m-%d')))))
+		</if>
+	</sql>
+
+	<sql id="condition">
+		<if test="priceContractNo != null and priceContractNo != ''">
+			AND PCB.PRICE_CONTRACT_NO  =  #{priceContractNo}
+		</if>
+		<if test="containerType != null and containerType!= ''and chargingType == '1'.toString()" >
+			AND PCB.container_type  = #{containerType}
+		</if>
+		<if test="binsType != null and binsType!= ''" >
+			AND (PCB.BINS_TYPE = #{binsType} OR PCB.BINS_TYPE IS NULL)
+		</if>
+		<if test="ioType != null and ioType!= ''" >
+			AND (PCB.IO_TYPE = #{ioType} OR PCB.IO_TYPE IS NULL)
+		</if>
+		<if test="fromProvinceCode != null and fromProvinceCode != ''">
+			AND PCB.from_province_code = #{fromProvinceCode}
+		</if>
+		<if test="fromCityCode != null and fromCityCode != ''">
+			AND PCB.from_city_code = #{fromCityCode}
+		</if>
+		<if test="fromDistrictCode != null and fromDistrictCode != ''">
+			AND PCB.from_district_code = #{fromDistrictCode}
+		</if>
+		<if test="fromCountyCode != null and fromCountyCode != ''">
+			AND PCB.from_county_code = #{fromCountyCode}
+		</if>
+		<if test="toProvinceCode != null and toProvinceCode != ''">
+			AND PCB.to_province_code = #{toProvinceCode}
+		</if>
+		<if test="toCityCode != null and toCityCode != ''">
+			AND PCB.to_city_code = #{toCityCode}
+		</if>
+		<if test="toDistrictCode != null and toDistrictCode != ''">
+			AND PCB.to_district_code = #{toDistrictCode}
+		</if>
+		<if test="toCountyCode != null and toCountyCode != ''">
+			AND PCB.to_county_code = #{toCountyCode}
+		</if>
+		<if test="remarks != null and remarks != ''">
+			AND PCB.remarks = #{remarks}
+		</if>
+		<if test="rCusBfPrice != null and rCusBfPrice != ''">
+			AND PCB.r_cus_bf_price = #{rCusBfPrice}
+		</if>
+		<if test="chargingType != null and chargingType != ''">
+			AND PCB.charging_type = #{chargingType}
+		</if>
+	</sql>
+
+	<select id="getPriceContractMapList" parameterType="map" resultType="map">
+		SELECT  pc.PRICE_CONTRACT_NO AS value ,pc.CONTRACT_NAME AS text FROM price_contract pc
+		WHERE 1=1
+		<if test="effectiveStatus != null and effectiveStatus!= ''" >
+			and (('Y' = #{effectiveStatus} AND pc.VALID_FLAG = #{effectiveStatus} AND PC.EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d') AND PC.EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d'))
+			or (('N' = #{effectiveStatus} AND (pc.VALID_FLAG = #{effectiveStatus} OR PC.EFFECT_START_TIME > DATE_FORMAT(now(),'%Y-%m-%d') OR PC.EFFECT_END_TIME &lt; DATE_FORMAT(now(),'%Y-%m-%d')))))
+		</if>
+	</select>
+
+	<select id="getPriceContractNoEffectiveStatus" resultType="String">
+		SELECT VALID_FLAG
+		FROM price_contract
+		WHERE PRICE_CONTRACT_NO = #{priceContractNo}
+	</select>
+
+	<select id="getPriceContractList" resultType="mstPriceContractModel">
+		SELECT
+		PC.PRICE_CONTRACT_NO                            AS priceContractNo
+		,PC.PRICE_CONTRACT_NO                            AS priceContractNoLink
+		,PC.CONTRACT_NAME                                AS contractName
+		,DATE_FORMAT(PC.EFFECT_START_TIME, '%Y-%m-%d') AS effectStartTime
+		,DATE_FORMAT(PC.EFFECT_END_TIME, '%Y-%m-%d')   AS effectEndTime
+		,PC.SETTLEMENT_TYPE                                     AS settlementTypeName
+		,PC.SETTLEMENT_TYPE                                     AS settlementType
+		,PC.SETTLEMENT_DAYS                            AS settlementDays
+		,PC.REMARKS                                   AS remarks
+		,TU1.NAME                                 AS createBy
+		, DATE_FORMAT(PC.CREATE_TIME, '%Y-%m-%d')      AS createTimeFmt
+		,TU2.NAME                                 AS updateBy
+		, DATE_FORMAT(PC.UPDATE_TIME, '%Y-%m-%d')      AS updateTimeFmt
+		,case when (PC.VALID_FLAG = 'Y'
+		AND PC.EFFECT_START_TIME &lt;= DATE_FORMAT(now(),'%Y-%m-%d')
+		and PC.EFFECT_END_TIME >= DATE_FORMAT(now(),'%Y-%m-%d'))
+		THEN 'Y' ELSE 'N' END as effectiveStatus
+		,PC.VALID_FLAG AS validFlag
+		FROM PRICE_CONTRACT PC
+		LEFT JOIN T_USER TU1 ON PC.CREATE_BY= TU1.ID
+		LEFT JOIN T_USER TU2 ON PC.UPDATE_BY= TU2.ID
+		WHERE 1=1
+		AND pc.SETTLEMENT_TYPE != '3'
+		<include refid="priceContractCondition" />
+		<if test="page.orderBy != null and page.orderBy != ''">
+			ORDER BY  ${page.orderBy}
+		</if>
+	</select>
+
+	<select id="getPriceContractCusList" resultType="PriceContractCusModel">
+		SELECT
+		PC.PRICE_CONTRACT_NO       AS priceContractNo
+		,PCC.CUS_CODE AS cusCode
+		,MRC.COMPY_SNAME                           AS cusName
+		,TU1.NAME                            AS createBy
+		,DATE_FORMAT(PCC.CREATE_TIME, '%Y-%m-%d') AS createTimeFmt
+		,TU2.NAME                            AS updateBy
+		,DATE_FORMAT(PCC.UPDATE_TIME, '%Y-%m-%d') AS updateTimeFmt
+		FROM PRICE_CONTRACT_CUS PCC
+		LEFT JOIN PRICE_CONTRACT PC ON PCC.PRICE_CONTRACT_NO= PC.PRICE_CONTRACT_NO
+		LEFT JOIN MST_RELATED_COMPY MRC ON PCC.CUS_CODE= MRC.RELATED_COMPY_CODE
+		LEFT JOIN T_USER TU1 ON PCC.CREATE_BY= TU1.ID
+		LEFT JOIN T_USER TU2 ON PCC.UPDATE_BY= TU2.ID
+		WHERE 1=1
+
+		AND PC.SETTLEMENT_TYPE != '3'
+		<if test="priceContractNo != null and priceContractNo != ''">
+			AND PCC.PRICE_CONTRACT_NO = #{priceContractNo}
+		</if>
+		<if test="cusCode != null and cusCode != ''">
+			AND PCC.CUS_CODE = #{cusCode}
+		</if>
+		<if test="cusCode == null or cusCode == ''">
+			AND PCC.VALID_FLAG = 'Y'
+		</if>
+
+	</select>
+</mapper>

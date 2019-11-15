@@ -1,0 +1,77 @@
+/*------页面字体、字号------*/
+div{
+	font-size:14px;
+	font-family:Microsoft Yahei;
+}
+table tr td{
+	font-size:14px;
+	font-family:Microsoft Yahei;
+}
+
+/*------表格列宽------*/
+.firstColWid{
+	width:15%;
+}
+.secondColWid{
+	width:20%;
+}
+.thirdColWid{
+	width:15%;
+}
+.thirdTinyColWid{
+	width:8%;
+}
+.fouthColWid{
+	width:18%;
+}
+.fifTinyColWid{
+	width:6%;
+}
+.sixColWid{
+	width:18%;
+}
+
+/*------文本框、日期时间------*/
+input{
+	width:145px;
+}	
+
+/*------可编辑下拉框------*/
+select{
+	width:147px;
+}
+
+/*------复选框下拉框------*/
+.check{
+	width:15px;
+}
+
+/*------单选框下拉框------*/
+.radio{
+	width:15px;
+}
+
+
+/*------地址、备注------*/
+.inputAddrWid{
+	width:300px;
+}
+.remarks{
+	width:500px;
+}
+
+/*------位置------*/
+#left{
+	text-align:left;
+}
+#right{
+	text-align:right;
+}
+#center{
+	text-align:center;
+}
+
+/*------div、table------*/
+/*div class="pd-20"*/
+/*table class="table" 无边框*/
+/*table class="table table-border" 有边框*/

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+  version="2.0">
+    
+  <description>Sunsail Expression Functions Library</description>
+  <display-name>Sunsail Expression Functions</display-name>
+  <tlib-version>1.0</tlib-version>
+  <short-name>expression</short-name>
+  <uri>http://sunsail.hyrus.com/jsp/jstl/expression</uri>
+
+  <!-- 用户 -->
+  <function>
+    <description>获取当前用户ID</description>
+    <name>currentUserId</name>
+    <function-class>com.xzg56.core.utils.ExpressionUtils</function-class>
+    <function-signature>java.lang.String getCurrentUserId()</function-signature>
+    <example>${expression:currentUserId()}</example>
+  </function>
+
+  <function>
+    <description>获取当前用户代码</description>
+    <name>currentUserCode</name>
+    <function-class>com.xzg56.core.utils.ExpressionUtils</function-class>
+    <function-signature>java.lang.String getCurrentUserCode()</function-signature>
+    <example>${expression:currentUserCode()}</example>
+  </function>
+
+  <function>
+    <description>获取系统参数</description>
+    <name>globalParameter</name>
+    <function-class>com.xzg56.core.utils.ExpressionUtils</function-class>
+    <function-signature>java.lang.String getGlobalParameter(java.lang.String)</function-signature>
+    <example>${expression:globalParameter(key)}</example>
+  </function>
+
+  <function>
+    <description>获取当前用户参数</description>
+    <name>userParameter</name>
+    <function-class>com.xzg56.core.utils.ExpressionUtils</function-class>
+    <function-signature>java.lang.String getUserParameter(java.lang.String)</function-signature>
+    <example>${expression:userParameter(key)}</example>
+  </function>
+
+  <!-- 日期、时间 -->
+  <function>
+    <description>获取当前日期</description>
+    <name>today</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDate()</function-signature>
+    <example>${expression:today()}</example>
+  </function>
+
+  <function>
+    <description>获取当前日期时间</description>
+    <name>now</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDateTime()</function-signature>
+    <example>${expression:now()}</example>
+  </function>
+
+  <function>
+    <description>获取当前月初日期</description>
+    <name>monthBegin</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getMonthBegin()</function-signature>
+    <example>${expression:monthBegin()}</example>
+  </function>
+
+  <function>
+    <description>获取当前月末日期</description>
+    <name>monthEnd</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getMonthEnd()</function-signature>
+    <example>${expression:monthEnd()}</example>
+  </function>
+
+  <function>
+    <description>获取当前日期前N天的日期</description>
+    <name>dateBefore</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDateBefore(int)</function-signature>
+    <example>${expression:dateBefore(beforeDate)}</example>
+  </function>
+
+  <function>
+    <description>获取当前日期后N天的日期</description>
+    <name>dateAfter</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDateAfter(int)</function-signature>
+    <example>${expression:dateAfter(afterDate)}</example>
+  </function>
+  
+  <function>
+    <description>获取当前日期前N天的日期时间</description>
+    <name>dateTimeBefore</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDateTimeBefore(int)</function-signature>
+    <example>${expression:dateTimeBefore(beforeDate)}</example>
+  </function>
+
+  <function>
+    <description>获取当前日期后N天的日期时间</description>
+    <name>dateTimeAfter</name>
+    <function-class>com.xzg56.utility.DateUtils</function-class>
+    <function-signature>java.lang.String getDateTimeAfter(int)</function-signature>
+    <example>${expression:dateTimeAfter(afterDate)}</example>
+  </function>
+
+  <!-- 字符串 -->
+  <function>
+    <description>截取字符串指定长度值</description>
+    <name>subStr</name>
+    <function-class>org.apache.commons.lang3.StringUtils</function-class>
+    <function-signature>java.lang.String substring(java.lang.String, int, int)</function-signature>
+    <example>${expression:subStr(str, start, end)}</example>  
+  </function>
+
+  <function>
+    <description>替换字符串指定字符</description>
+    <name>replace</name>
+    <function-class>org.apache.commons.lang3.StringUtils</function-class>
+    <function-signature>java.lang.String replace(java.lang.String, java.lang.String, java.lang.String)</function-signature>
+    <example>${expression:replace(text, searchString, replacement)}</example>  
+  </function>
+
+</taglib>

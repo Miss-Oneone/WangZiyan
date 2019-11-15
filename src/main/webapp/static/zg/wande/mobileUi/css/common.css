@@ -1,0 +1,12 @@
+/* 移动网页共通css */
+body {
+    font-family: "Helvetica Neue", Helvetica, STHeiTi, sans-serif;
+}
+
+a,img {
+    -webkit-touch-callout: none; /* 禁止长按连接与图片弹出菜单*/
+}
+html,body {
+    -webkit-user-select: none;   /*禁止选中文本 */
+    user-select: none;
+}

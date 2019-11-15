@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.mst.gps.dao.GpsDao">
+
+    <select id="findGpsSearchModelList" resultType="GpsModel">
+        SELECT GDK.PLATE_NUM AS plateNum
+              , GDK.MILE_SUM  AS mileSum
+              , DATE_FORMAT(GDK.BEGIN_TIME, '%Y-%m-%d') AS beginTime
+              , DATE_FORMAT(GDK.END_TIME, '%Y-%m-%d')   AS endTime
+              , IFNULL(TU.NAME,'系统') AS createBy
+              , DATE_FORMAT(GDK.CREATE_TIME, '%Y-%m-%d') AS createTime
+              , TU2.NAME AS updateBy
+              , DATE_FORMAT(GDK.UPDATE_TIME, '%Y-%m-%d') AS updateTime
+          FROM  GPS_DAILY_KM GDK
+    LEFT JOIN  T_USER TU ON TU.ID = GDK.CREATE_BY
+    LEFT JOIN  T_USER TU2 ON TU2.ID = GDK.UPDATE_BY
+         WHERE  1=1
+        <if test="plateNum != null and plateNum !=''">
+            AND GDK.PLATE_NUM = #{plateNum}
+        </if>
+        <if test="dateFrom != null and dateFrom !=''">
+            AND DATE_FORMAT(GDK.BEGIN_TIME, '%Y-%m-%d') &gt;= #{dateFrom}
+        </if>
+        <if test="dateTo != null and dateTo !=''">
+            AND DATE_FORMAT(GDK.BEGIN_TIME, '%Y-%m-%d') &lt;= #{dateTo}
+        </if>
+    </select>
+
+</mapper>

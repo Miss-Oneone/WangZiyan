@@ -1,0 +1,106 @@
+@CHARSET "UTF-8";
+/* 应用设置 */
+a:link{
+    color: #383098;
+    text-decoration: none;
+    outline: none;
+}
+a:visited{
+    color: #383098;
+    text-decoration: none
+}
+a:active{
+    color: #ff0000;
+    text-decoration: underline;
+}
+a:hover{
+    color: #ff0000;
+    text-decoration: underline;
+}
+*{
+	margin:0px;
+    font-family: "宋体","Verdana","Arial", "Helvetica", "sans-serif";
+    font-size: 12px;    
+}
+fieldset {
+	margin:0px;
+	padding:0px;
+}
+
+/*
+fieldset div{	
+	
+	line-height:25px;
+	text-align:left;
+}
+*/
+
+img{
+	margin:0px;
+	padding:0px;
+   	border:0px ;	
+}
+.txtinput{
+	width:100px;
+}
+.inputTip{
+	color:red;
+}
+
+.formlayout{
+	text-align:center;
+}
+
+#msgShow{
+	color:red;
+	text-align:center;
+}
+
+.toolbar{	
+	padding-left:10px;
+	text-align:center;
+}
+/* 页面元素通用布局 */
+
+#maskingLayer {/*该层为覆盖层*/ 
+  display: none; 
+  z-index: 9998; /*设置高亮层的下方*/ 
+  FILTER: alpha(opacity=50); /*设置成透明*/ 
+  LEFT: 0px;  
+  WIDTH: 99%;  
+  POSITION: absolute;  
+  TOP: 0px;  
+  HEIGHT: 99%;  
+  BACKGROUND-COLOR: #DDDDDD;  
+  moz-opacity: 0.8;  
+  opacity: .80 
+} 
+
+
+.focusLine{
+	CURSOR:DEFAULT;
+	BACKGROUND: #DFFFFF; 
+}
+.normalLine{
+	CURSOR:DEFAULT;
+	BACKGROUND: #FFFFFF; 
+}
+.SendButton{
+    BACKGROUND-COLOR: #1AE1E1;
+	height: 30px;
+}
+.AuditButton{
+    BACKGROUND-COLOR: #99CCFF	;
+	height: 30px;
+}
+.AllowButton{
+    BACKGROUND-COLOR: #99FF99;
+	height: 30px;
+}
+.MainButton{
+	Cursor:pointer;	height: 23px;COLOR:Blue; 
+}
+.NavButton{
+	Cursor:pointer;
+	COLOR:Blue;
+}

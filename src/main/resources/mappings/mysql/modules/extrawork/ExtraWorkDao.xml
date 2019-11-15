@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.jg.modules.extrawork.dao.ExtraWorkDao">
+
+    <select id="getExtraWorkModelList" resultType="ExtraWorkModel">
+        SELECT  EWD.ID         AS  id
+              ,  EWD.OCCUR_DATE AS occurDate
+              ,  MD.DRIVER_NAME AS driverName
+              ,  MEWPI.EXTRA_WORK_NAME AS extraWorkName
+              ,  EWD.QUANTITY   AS quantity
+              ,  EWD.AMOUNT     AS  amount
+              ,  EWD.EXTRA_WORK_OIL_PATCH AS extraWorkOilPatch
+              ,  EWD.ADD_KM     AS addKm
+              ,  EWD.ADD_KM_OIL_PATCH AS addKmOilPatch
+              ,  EWD.PLATE_NUM  AS plateNum
+              ,  MTF.FRAME_CARD_ID AS frameCardId
+              ,  MTF.FRAME_NUM     AS frameNum
+              ,  EWD.CONTN_NO      AS contnNo
+              ,  EWD.REMARKS       AS remarks
+              ,  EWD.SYSTEM_AUTO_FLAG  AS systemAutoFlag
+              ,  EWD.ORDER_NO      AS orderNo
+              ,  TU1.NAME          AS createBy
+              ,  DATE_FORMAT(EWD.CREATE_TIME,'%Y-%m-%d')   AS createTime
+              ,  TU2.NAME          AS updateBy
+              ,  DATE_FORMAT(EWD.UPDATE_TIME,'%Y-%m-%d')   AS updateTime
+          FROM  EXTRA_WORK_DETAIL  EWD
+    LEFT JOIN  MST_DRIVER MD ON MD.DRIVER_CODE = EWD.DRIVER_CODE
+    LEFT JOIN  MST_EXTRA_WORK_PRICE_ITEM MEWPI ON MEWPI.ID = EWD.EXTRA_WORK_ID
+    LEFT JOIN  MST_TRUCK_FRAME MTF ON MTF.ID = EWD.FRAME_ID
+    LEFT JOIN  T_USER TU1 ON TU1.ID = EWD.CREATE_BY
+    LEFT JOIN  T_USER TU2 ON TU2.ID = EWD.UPDATE_BY
+         WHERE  1=1
+            AND EWD.DELETE_FLAG = 'N'
+        <if test="occurDateFrom != null and occurDateFrom != ''">
+            AND EWD.OCCUR_DATE >= #{occurDateFrom}
+        </if>
+        <if test="occurDateTo != null and occurDateTo != ''">
+            AND EWD.OCCUR_DATE &lt;= #{occurDateTo}
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            AND EWD.DRIVER_CODE = #{driverCode}
+        </if>
+        <if test="plateNum != null and plateNum != ''">
+            AND EWD.PLATE_NUM = #{plateNum}
+        </if>
+        <if test="extraWorkId != null and extraWorkId != ''">
+            AND EWD.EXTRA_WORK_ID = #{extraWorkId}
+        </if>
+        <if test="frameId != null and frameId != ''">
+            AND EWD.FRAME_ID = #{frameId}
+        </if>
+        <if test="contnNo != null and contnNo != ''">
+            AND EWD.CONTN_NO LIKE  CONCAT('%', #{contnNo}, '%')
+        </if>
+    </select>
+
+    <select id="searchExtraWorkPriceItem" resultType="ExtraWorkModel">
+        SELECT  ID
+              ,  EXTRA_WORK_NAME
+              ,  AMOUNT
+              ,  EXTRA_WORK_ADD_KM
+              ,  EXTRA_WORK_OIL_PATCH
+              ,  REMARKS
+          FROM  MST_EXTRA_WORK_PRICE_ITEM
+    </select>
+
+    <select id="getExtraWorkById" resultType="ExtraWorkModel">
+        SELECT  EWD.ID         AS  ID
+              ,  EWD.OCCUR_DATE AS occurDate
+              ,  EWD.DRIVER_CODE AS driverCode
+              ,  EWD.EXTRA_WORK_ID AS extraWorkId
+              ,  EWD.QUANTITY   AS quantity
+              ,  EWD.AMOUNT     AS  amount
+              ,  EWD.EXTRA_WORK_OIL_PATCH AS extraWorkOilPatch
+              ,  EWD.ADD_KM     AS addKm
+              ,  EWD.ADD_KM_OIL_PATCH AS addKmOilPatch
+              ,  EWD.PLATE_NUM     AS plateNum
+              ,  EWD.FRAME_ID      AS frameId
+              ,  MTF.FRAME_NUM     AS frameNum
+              ,  EWD.CONTN_NO      AS contnNo
+              ,  EWD.REMARKS       AS remarks
+              ,  MEWPI.AMOUNT      AS extraWorkAmount
+              ,  MEWPI.EXTRA_WORK_ADD_KM     AS extraWorkAddKm
+              ,  MEWPI.EXTRA_WORK_OIL_PATCH  AS extraWorkOilPatchEach
+              ,  MT.LITERS         AS liters
+              ,  EWD.SYSTEM_AUTO_FLAG AS systemAutoFlag
+          FROM  EXTRA_WORK_DETAIL  EWD
+    LEFT JOIN  MST_EXTRA_WORK_PRICE_ITEM MEWPI ON MEWPI.ID = EWD.EXTRA_WORK_ID
+    LEFT JOIN  MST_TRAILER MT ON MT.PLATE_NUM = EWD.PLATE_NUM
+    LEFT JOIN  MST_TRUCK_FRAME MTF ON MTF.ID = EWD.FRAME_ID
+         WHERE  EWD.DELETE_FLAG = 'N'
+        <if test="id != null and id != ''">
+            AND EWD.ID = #{id}
+        </if>
+        <if test="orderNo != null and orderNo != ''">
+            AND EWD.ORDER_NO = #{orderNo}
+        </if>
+    </select>
+
+    <select id="searchPlateNumLiters" resultType="String">
+        SELECT MT.LITERS
+          FROM MST_TRAILER MT
+         WHERE MT.PLATE_NUM = #{plateNum}
+    </select>
+
+    <select id="searchExtraWorkPrice" resultType="ExtraWorkModel">
+        SELECT AMOUNT               AS extraWorkAmount
+              , EXTRA_WORK_ADD_KM    AS extraWorkAddKm
+              , EXTRA_WORK_OIL_PATCH AS extraWorkOilPatchEach
+          FROM MST_EXTRA_WORK_PRICE_ITEM
+         WHERE 1=1
+        <if test="id != null and id != ''">
+            AND ID = #{id}
+        </if>
+    </select>
+
+    <insert id="addExtraWork">
+        INSERT INTO extra_work_detail(
+         OCCUR_DATE,
+         DRIVER_CODE,
+         EXTRA_WORK_ID,
+         QUANTITY,
+         AMOUNT,
+         EXTRA_WORK_OIL_PATCH,
+         ADD_KM,
+         ADD_KM_OIL_PATCH,
+         PLATE_NUM,
+         FRAME_ID,
+         CONTN_NO,
+         ORDER_NO,
+         SYSTEM_AUTO_FLAG,
+         DELETE_FLAG,
+         REMARKS,
+         CREATE_BY,
+         CREATE_TIME
+        )VALUES (
+        #{occurDate},
+        #{driverCode},
+        #{extraWorkId},
+        #{quantity},
+        #{amount},
+        #{extraWorkOilPatch},
+        #{addKm},
+        #{addKmOilPatch},
+        #{plateNum},
+        #{frameId},
+        #{contnNo},
+        #{orderNo},
+        #{systemAutoFlag},
+        #{deleteFlag},
+        #{remarks},
+        #{createBy},
+        now()
+        )
+    </insert>
+
+    <update id="eidtExtraWork">
+        UPDATE extra_work_detail
+           SET  OCCUR_DATE = #{occurDate}
+              , DRIVER_CODE = #{driverCode}
+              , EXTRA_WORK_ID = #{extraWorkId}
+              , QUANTITY = #{quantity}
+              , AMOUNT = #{amount}
+              , EXTRA_WORK_OIL_PATCH = #{extraWorkOilPatch}
+              , ADD_KM = #{addKm}
+              , ADD_KM_OIL_PATCH = #{addKmOilPatch}
+              , PLATE_NUM = #{plateNum}
+              , FRAME_ID = #{frameId}
+              , CONTN_NO = #{contnNo}
+              , ORDER_NO = #{orderNo}
+              , SYSTEM_AUTO_FLAG = #{systemAutoFlag}
+              , DELETE_FLAG = #{deleteFlag}
+              , REMARKS = #{remarks}
+              , UPDATE_BY = #{updateBy}
+              , UPDATE_TIME= now()
+         WHERE ID = #{id}
+    </update>
+
+    <update id="deleteExtraWork">
+        UPDATE  EXTRA_WORK_DETAIL
+           SET   DELETE_FLAG ='Y'
+              ,  UPDATE_BY = #{updateBy}
+              ,  UPDATE_TIME= now()
+         WHERE  ID = #{id}
+    </update>
+
+    <select id="getAmount" resultType="ExtraWorkModel">
+        SELECT SUM(EWD.AMOUNT)   AS amountSum
+              , SUM(EWD.EXTRA_WORK_OIL_PATCH) AS extraWorkOilPatchSum
+              , SUM(EWD.ADD_KM) AS addKmSum
+              , SUM(EWD.ADD_KM_OIL_PATCH) AS addKmOilPatchSum
+          FROM EXTRA_WORK_DETAIL EWD
+         WHERE EWD.DELETE_FLAG = 'N'
+        <if test="occurDateFrom != null and occurDateFrom != ''">
+            AND EWD.OCCUR_DATE >= #{occurDateFrom}
+        </if>
+        <if test="occurDateTo != null and occurDateTo != ''">
+            AND EWD.OCCUR_DATE &lt;= #{occurDateTo}
+        </if>
+        <if test="driverCode != null and driverCode != ''">
+            AND EWD.DRIVER_CODE = #{driverCode}
+        </if>
+        <if test="plateNum != null and plateNum != ''">
+            AND EWD.PLATE_NUM = #{plateNum}
+        </if>
+        <if test="extraWorkId != null and extraWorkId != ''">
+            AND EWD.EXTRA_WORK_ID = #{extraWorkId}
+        </if>
+        <if test="frameId != null and frameId != ''">
+            AND EWD.FRAME_ID = #{frameId}
+        </if>
+        <if test="contnNo != null and contnNo != ''">
+            AND EWD.CONTN_NO LIKE  CONCAT('%', #{contnNo}, '%')
+        </if>
+    </select>
+
+</mapper>

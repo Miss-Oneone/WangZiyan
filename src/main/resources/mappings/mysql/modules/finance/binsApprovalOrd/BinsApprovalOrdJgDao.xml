@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.finance.binsApprovalOrd.dao.BinsApprovalOrdJgDao">
+    <select id="find" resultType="BinsApprovalOrdJgModel">
+        SELECT * FROM (
+        SELECT  OH.ORDER_NO                                 AS orderNo
+        , OH.ORDER_NO                                 AS orderNoF
+        , MAX(OH.business_no1)                                    AS businessNo1
+        , MAX(OH.business_no2)                                 AS businessNo2
+        , MAX(OH.business_no3)                                 AS businessNo3
+        , MAX(OH.CONTAINER_TYPE)                           AS containerType
+        , MAX(MRC.COMPY_SNAME)                            AS cusCode
+        , DATE_FORMAT(MAX(OH.business_date),'%y-%m-%d')       AS businessDate
+        , IFNULL((SELECT SUM(R.AMOUNT) FROM ord_receipts_payments R WHERE R.ORDER_NO = OH.ORDER_NO AND R.ACTIVE_FLAG = 'Y' AND R.FEE_TYPE = '1' AND R.PAYMENT_TYPE = '1'),0) AS rAmountSum
+        , IFNULL((SELECT SUM(R.TAX_AMOUNT) FROM ord_receipts_payments R WHERE R.ORDER_NO = OH.ORDER_NO AND R.ACTIVE_FLAG = 'Y' AND R.FEE_TYPE = '1' AND R.PAYMENT_TYPE = '1'),0) AS rTaxAmountSum
+        , IFNULL((SELECT SUM(P.AMOUNT) FROM ord_receipts_payments P WHERE P.ORDER_NO = OH.ORDER_NO AND P.ACTIVE_FLAG = 'Y' AND P.FEE_TYPE = '1' AND P.PAYMENT_TYPE = '2'),0) AS pAmountSum
+        , IFNULL((SELECT SUM(P.TAX_AMOUNT) FROM ord_receipts_payments P WHERE P.ORDER_NO = OH.ORDER_NO AND P.ACTIVE_FLAG = 'Y' AND P.FEE_TYPE = '1' AND P.PAYMENT_TYPE = '2'),0) AS pTaxAmountSum
+        , (IFNULL((SELECT SUM(R.AMOUNT-R.TAX_AMOUNT) FROM ord_receipts_payments R WHERE R.ORDER_NO = OH.ORDER_NO AND R.ACTIVE_FLAG = 'Y' AND R.FEE_TYPE = '1' AND R.PAYMENT_TYPE = '1'),0)
+        - IFNULL((SELECT SUM(P.AMOUNT-P.TAX_AMOUNT) FROM ord_receipts_payments    P WHERE P.ORDER_NO = OH.ORDER_NO AND P.ACTIVE_FLAG = 'Y' AND P.FEE_TYPE = '1' AND P.PAYMENT_TYPE = '2'),0)) AS profit
+        , CASE WHEN (SELECT COUNT(1) FROM ord_receipts_payments F WHERE F.ORDER_NO = OH.ORDER_NO AND F.FEE_TYPE = '1' AND F.ACTIVE_FLAG = 'Y') = 0 THEN '0'
+               WHEN (SELECT COUNT(1) FROM ord_receipts_payments F WHERE F.ORDER_NO = OH.ORDER_NO AND F.FEE_TYPE = '1' AND F.ACTIVE_FLAG = 'Y' AND F.BINS_APPROVAL_FLAG = 'N') > 0 THEN 'N'
+        ELSE  'Y'  END                                         AS BINS_APPROVAL_FLAG
+        , MAX(OH.REMARKS)                                  AS remarks
+        , CASE WHEN (SELECT COUNT(1) FROM ord_receipts_payments F WHERE F.ORDER_NO = OH.ORDER_NO AND F.FEE_TYPE = '1' AND F.COMPY_CODE = #{relatedCompyCode} AND F.ACTIVE_FLAG = 'Y') > 0 THEN 'Y'
+        ELSE  'N'
+        END                                         AS relatedCompyCode
+        FROM ORD_HEADER OH
+        LEFT JOIN MST_RELATED_COMPY MRC  ON MRC.RELATED_COMPY_CODE = OH.CUS_CODE
+        WHERE 1=1
+        <if test="businessDateFrom != null and businessDateFrom != ''">
+            AND OH.business_date &gt; str_to_date(CONCAT(#{businessDateFrom},'00:00:00'),'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="businessDateTo != null and businessDateTo != ''">
+            AND OH.business_date &lt; str_to_date(CONCAT(#{businessDateTo},'23:59:59'),'%Y-%m-%d %H:%i:%s')
+        </if>
+        <if test="businessNo1 != null and businessNo1 != ''">
+            AND OH.business_no1 like CONCAT('%',#{businessNo1},'%')
+        </if>
+        <if test="businessNo2 != null and businessNo2 != ''">
+            AND OH.business_no2 like CONCAT('%',#{businessNo2},'%')
+        </if>
+        <if test="businessNo3 != null and businessNo3 != ''">
+            AND OH.business_no3 like CONCAT('%',#{businessNo3},'%')
+        </if>
+        <if test="createBy != null and createBy != ''">
+            AND OH.CREATE_BY = #{createBy}
+        </if>
+        <if test="cusCode != null and cusCode != ''">
+            AND OH.CUS_CODE = #{cusCode}
+        </if>
+        <if test="orderNo != null and orderNo != ''">
+            AND oh.ORDER_NO like CONCAT('%',#{orderNo},'%')
+        </if>
+        GROUP BY OH.ORDER_NO
+        HAVING 1=1
+        <if test="binsApprovalFlag != null and binsApprovalFlag != ''">
+             AND BINS_APPROVAL_FLAG = #{binsApprovalFlag}
+        </if>
+        <if test="binsApprovalFlag == null or binsApprovalFlag == ''">
+            AND BINS_APPROVAL_FLAG IN ('Y','N')
+        </if>
+        <if test="relatedCompyCode != null and relatedCompyCode != ''">
+             AND relatedCompyCode = 'Y'
+        </if>
+
+        <if test="page.orderBy != null and page.orderBy != ''">
+            ORDER BY ${page.orderBy}
+        </if>
+        ) T
+        WHERE 1=1
+        <if test="profitFrom != null and profitFrom != ''">
+            AND T.profit &gt;= #{profitFrom}
+        </if>
+        <if test="profitTo != null and profitTo != ''">
+            AND T.profit &lt;= #{profitTo}
+        </if>
+    </select>
+</mapper>

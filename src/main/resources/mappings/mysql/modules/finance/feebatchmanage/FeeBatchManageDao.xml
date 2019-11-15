@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xzg56.finance.feebatchmanage.dao.FeeBatchManageDao">
+    <sql id="condition">
+        <if test="drvordTimeFrom != null and drvordTimeFrom != ''">
+            AND DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') &gt;= #{drvordTimeFrom}
+        </if>
+        <if test="drvordTimeTo != null and drvordTimeTo != ''">
+            AND DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') &lt;=#{drvordTimeTo}
+        </if>
+        <if test="createTimeFrom != null and createTimeFrom != ''">
+            AND DATE_FORMAT(F.CREATE_TIME,'%Y-%m-%d') &gt;=#{createTimeFrom}
+        </if>
+        <if test="createTimeTo != null and createTimeTo != ''">
+            AND DATE_FORMAT(F.CREATE_TIME,'%Y-%m-%d') &lt;=#{createTimeTo}
+        </if>
+        <if test="blNo != null and blNo != ''">
+            AND OH.BUSINESS_NO1 like CONCAT('%',#{blNo},'%')
+        </if>
+        <if test="contnNo != null and contnNo != ''">
+            AND OH.BUSINESS_NO2 like CONCAT('%',#{contnNo},'%')
+        </if>
+        <if test="piCode != null and piCode != ''">
+            AND F.PI_CODE = #{piCode}
+        </if>
+        <if test="cusCode != null and cusCode != ''">
+            AND OH.CUS_CODE = #{cusCode}
+        </if>
+        <if test="relatedCompyCode != null and relatedCompyCode != ''">
+            AND F.COMPY_CODE = #{relatedCompyCode}
+        </if>
+        <if test="createBy != null and createBy != ''">
+            AND F.CREATE_BY = #{createBy}
+        </if>
+        <if test="binsApprovalFlag != null and binsApprovalFlag != ''">
+            AND F.BINS_APPROVAL_FLAG IN (${binsApprovalFlag})
+        </if>
+        <if test="amount != null and amount != ''">
+            AND F.AMOUNT${sign}#{amount}
+        </if>
+        <if test="feeStatus != null and feeStatus != ''">
+            AND F.FEE_STATUS IN (${feeStatus})
+        </if>
+        <if test="containerType != null and containerType != ''">
+            AND OH.CONTAINER_TYPE = #{containerType}
+        </if>
+        <if test="paymentType != null and paymentType != ''">
+            AND F.PAYMENT_TYPE = #{paymentType}
+        </if>
+    </sql>
+    <select id="findFeeBatchManageList" resultType="FeeBatchManageModel">
+        SELECT OH.ORDER_NO AS orderNo
+        ,OH.ORDER_NO as orderNoLink
+        ,OH.STATUS AS ordStsCode
+        ,OH.STATUS AS ordStsName
+        ,CUS.COMPY_SNAME AS cusName
+        ,DATE_FORMAT(OH.BUSINESS_DATE,'%Y-%m-%d') AS drvordTime
+        ,OH.BUSINESS_NO1 AS blNo
+        ,OH.BUSINESS_NO2 AS contnNo
+        ,OH.CONTAINER_TYPE AS containerType
+        ,F.PI_NAME AS piName
+        ,F.AMOUNT AS amount
+        ,MRC.COMPY_SNAME AS relatedCompyName
+        ,MRC.RELATED_COMPY_CODE AS relatedCompyCode
+        ,MRC.RELATED_COMPY_TYPE AS relatedCompyType
+        ,TU1.name AS createBy
+        ,DATE_FORMAT(F.CREATE_TIME,'%m-%d %H:%i') AS createTime
+        ,TU2.name AS updateBy
+        ,DATE_FORMAT(F.UPDATE_TIME,'%m-%d %H:%i') AS updateTime
+        ,F.PAYMENT_TYPE AS paymentType
+        ,F.PAYMENT_TYPE AS paymentTypeName
+        ,F.BINS_APPROVAL_FLAG AS binsApprovalFlag
+        ,F.BINS_APPROVAL_FLAG AS binsApprovalFlagName
+        ,F.ID AS feeId
+        ,F.SYSTEM_AUTO_FLAG AS systemAutoFlag
+        ,F.EDITABLE_FLAG
+        ,F.FEE_STATUS as feeStatus
+        ,F.FEE_STATUS as feeStatusName
+        FROM ord_receipts_payments F
+        INNER JOIN mst_related_compy MRC ON MRC.RELATED_COMPY_CODE = F.COMPY_CODE
+        INNER JOIN ord_header OH ON OH.ORDER_NO = F.ORDER_NO
+        INNER JOIN mst_related_compy CUS ON CUS.RELATED_COMPY_CODE = OH.CUS_CODE
+        LEFT JOIN t_user TU1 ON F.CREATE_BY = TU1.ID
+        LEFT JOIN t_user TU2 ON F.UPDATE_BY = TU2.ID
+        WHERE F.ACTIVE_FLAG = 'Y' AND F.FEE_TYPE = '1'
+        <include refid="condition"/>
+        <if test="page.orderBy == null or page.orderBy == ''">
+            ORDER BY OH.BUSINESS_DATE,F.CREATE_TIME,OH.ORDER_NO DESC
+        </if>
+        <if test="page.orderBy != null and page.orderBy != ''">
+            ORDER BY ${page.orderBy}
+        </if>
+    </select>
+
+    <select id="searchList" resultType="BatchAddPiModel">
+        SELECT
+        (@i:=@i+1) AS id
+         ,OH.ORDER_NO                  AS orderNo
+        ,OH.BUSINESS_NO1                     AS blNo
+        ,OH.BUSINESS_NO2                  AS contnNo
+        ,OH.CONTAINER_TYPE            AS containerType
+        ,  (SELECT COUNT(1) FROM `ord_receipts_payments` R
+        WHERE R.`ACTIVE_FLAG` = 'Y'
+        AND R.`ORDER_NO` = OH.ORDER_NO
+        AND R.PAYMENT_TYPE = #{prFlag}
+        <if test="checkPiName != null and checkPiName != ''">
+            AND  R.`PI_CODE` = #{checkPiCode}
+        </if> ) as checkResult
+        ,(SELECT GROUP_CONCAT(R.`PI_NAME`  SEPARATOR '/')
+        FROM `ord_receipts_payments` R
+        WHERE R.`ORDER_NO` = OH.ORDER_NO
+        AND R.PAYMENT_TYPE = #{prFlag} ) 	AS checkRemark
+        FROM   ORD_HEADER OH ,(select   @i:=0)   as   it
+        WHERE   1=1
+        <if test="orderNoStr != null and orderNoStr != ''">
+            AND  OH.ORDER_NO in
+            <foreach item="item" index="index" collection="orderNoStr" open="(" separator="," close=")">
+                '${item}'
+            </foreach>
+        </if>
+    </select>
+</mapper>
